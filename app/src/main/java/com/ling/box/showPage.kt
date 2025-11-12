@@ -236,7 +236,7 @@ fun ShowPage(
                 onCheckUpdateClick = { checkForUpdates() },
                 onLicenseClick = { showLicenseDialog = true },
                 onSourceCodeClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, UpdateConfig.GITHUB_USER_URL.toUri())
+                    val intent = Intent(Intent.ACTION_VIEW, UpdateConfig.GITHUB_REPO_URL.toUri())
                     try {
                         context.startActivity(intent)
                     } catch (e: Exception) {
