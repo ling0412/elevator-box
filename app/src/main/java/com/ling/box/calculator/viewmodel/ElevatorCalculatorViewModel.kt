@@ -177,6 +177,8 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
             // 清空所有电梯
             _unitStateList.forEachIndexed { index, _ ->
                 repository.removeLastAccessTime(index)
+                // 显式清理所有电梯数据，防止存储残留
+                repository.clearElevatorData(index)
             }
             _unitStateList.clear()
             // 创建新的空白电梯
@@ -192,6 +194,8 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
         sortedIndices.forEach { indexToRemove ->
             if (indexToRemove in _unitStateList.indices) {
                 repository.removeLastAccessTime(indexToRemove)
+                // 显式清理被删除电梯的所有数据，防止存储残留
+                repository.clearElevatorData(indexToRemove)
                 _unitStateList.removeAt(indexToRemove)
             }
         }
