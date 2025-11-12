@@ -45,14 +45,28 @@ android {
             val keyAlias = System.getenv("KEY_ALIAS")
             val keyPassword = System.getenv("KEY_PASSWORD")
             
-            if (keystoreFile != null && keystorePassword != null && keyAlias != null && keyPassword != null) {
+            // 只有在所有环境变量都存在时才配置签名
+            if (!keystoreFile.isNullOrBlank() && 
+                !keystorePassword.isNullOrBlank() && 
+                !keyAlias.isNullOrBlank() && 
+                !keyPassword.isNullOrBlank()) {
                 val keystore = file(keystoreFile)
-                if (keystore.exists()) {
+                if (keystore.exists() && keystore.isFile) {
+                    println("✓ 找到 keystore 文件: ${keystore.absolutePath}")
+                    println("✓ 使用密钥别名: $keyAlias")
                     storeFile = keystore
                     storePassword = keystorePassword
                     this.keyAlias = keyAlias
                     this.keyPassword = keyPassword
+                } else {
+                    println("⚠ keystore 文件不存在或不是文件: ${keystore.absolutePath}")
                 }
+            } else {
+                println("⚠ 签名环境变量未完全设置，将使用未签名的构建")
+                if (keystoreFile.isNullOrBlank()) println("  - KEYSTORE_FILE 未设置")
+                if (keystorePassword.isNullOrBlank()) println("  - KEYSTORE_PASSWORD 未设置")
+                if (keyAlias.isNullOrBlank()) println("  - KEY_ALIAS 未设置")
+                if (keyPassword.isNullOrBlank()) println("  - KEY_PASSWORD 未设置")
             }
         }
     }
@@ -63,9 +77,16 @@ android {
             // 推荐：启用资源收缩
             isShrinkResources = true
             isDebuggable = false
-            // 如果配置了签名且密钥文件存在，则使用签名配置
+            // 只有在签名配置完全有效时才使用签名
             val releaseSigningConfig = signingConfigs.findByName("release")
-            if (releaseSigningConfig?.storeFile?.exists() == true) {
+            val signingConfigValid = releaseSigningConfig?.let { config ->
+                config.storeFile?.exists() == true && 
+                !config.storePassword.isNullOrBlank() &&
+                !config.keyAlias.isNullOrBlank() &&
+                !config.keyPassword.isNullOrBlank()
+            } ?: false
+            
+            if (signingConfigValid) {
                 signingConfig = releaseSigningConfig
             }
             proguardFiles(
