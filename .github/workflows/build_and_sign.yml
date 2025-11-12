@@ -1,0 +1,56 @@
+name: Build and Sign Release APK
+
+on:
+  workflow_dispatch: # This allows manual trigger from GitHub UI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # Use the latest Ubuntu environment provided by GitHub Actions
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4 # Action to checkout your repository code
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4 # Action to set up Java Development Kit
+        with:
+          distribution: 'temurin' # Recommended distribution
+          java-version: '17'      # Use a modern JDK version compatible with Android
+
+      - name: Grant Execute Permission to Gradle Wrapper
+        run: chmod +x gradlew # Ensure the gradlew script is executable
+
+      - name: Decode Keystore
+        # Decode the base64 encoded keystore file from secrets and save it temporarily
+        run: |
+          echo "${{ secrets.SIGNING_KEYSTORE_BASE64 }}" | base64 -d > app/release-key.jks
+        # Assuming your module is named 'app', adjust the path if necessary
+        # We save it inside the module directory or project root temporarily
+
+      - name: Build and Sign Release APK
+        run: |
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=$(pwd)/app/release-key.jks \
+            -Pandroid.injected.signing.store.password=${{ secrets.SIGNING_KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.SIGNING_KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.SIGNING_KEY_PASSWORD }}
+        # This command tells Gradle to build the release variant and inject signing properties
+        # It uses the temporary keystore file and secrets for passwords/alias.
+        # Adjust './gradlew assembleRelease' if you have a multi-module project
+        # and need to specify a specific module, e.g., './gradlew :app:assembleRelease'
+        # The -P flags are a standard way to pass signing info to Gradle for CI builds.
+
+      - name: Upload Signed APK
+        uses: actions/upload-artifact@v4 # Action to upload build artifacts
+        with:
+          name: signed-release-apk # Name for the artifact
+          path: app/build/outputs/apk/release/app-release.apk # Path to the generated signed APK
+          # Adjust the path if your module name is different or if you have product flavors
+          # For example, if you have a flavor named 'pro', the path might be:
+          # path: app/build/outputs/apk/pro/release/app-pro-release.apk
+          # You can use wildcards if needed, e.g., 'app/build/outputs/apk/release/*.apk'
+
+      - name: Clean up Keystore File
+        # Remove the temporary keystore file for security
+        run: rm app/release-key.jks
+        if: always() # Run this step even if previous steps fail

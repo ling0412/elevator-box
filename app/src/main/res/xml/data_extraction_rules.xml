@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   参考: https://developer.android.com/about/versions/12/backup-restore#xml-changes
+-->
+<data-extraction-rules>
+    <!-- 云备份配置 -->
+    <cloud-backup>
+        <!-- 磅梯数据（计算器数据）和平衡系数算法设置 -->
+        <include domain="sharedpref" path="elevator_calculator_prefs"/>
+        
+        <!-- 自检数据（安全计算数据） -->
+        <include domain="sharedpref" path="ElevatorPrefs"/>
+        
+        <!-- 应用设置（启动界面选择） -->
+        <include domain="sharedpref" path="app_settings"/>
+    </cloud-backup>
+    
+    <!-- 设备传输配置（当用户更换设备时） -->
+    <device-transfer>
+        <!-- 磅梯数据（计算器数据）和平衡系数算法设置 -->
+        <include domain="sharedpref" path="elevator_calculator_prefs"/>
+        
+        <!-- 自检数据（安全计算数据） -->
+        <include domain="sharedpref" path="ElevatorPrefs"/>
+        
+        <!-- 应用设置（启动界面选择） -->
+        <include domain="sharedpref" path="app_settings"/>
+    </device-transfer>
+</data-extraction-rules>

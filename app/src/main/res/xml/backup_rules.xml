@@ -1,0 +1,8 @@
+<!--
+   备份规则文件（兼容性保留）
+   注意：Android 12 (API 31)+ 主要使用 data_extraction_rules.xml
+   此文件保留仅用于向后兼容，实际备份配置在 data_extraction_rules.xml 中
+-->
+<full-backup-content>
+    <!-- Android 12+ 使用 data_extraction_rules.xml 中的配置 -->
+</full-backup-content>
