@@ -39,13 +39,17 @@ android {
 
     signingConfigs {
         create("release") {
-            // 从环境变量读取密钥信息（用于 CI/CD）
-            val keystoreFile = System.getenv("KEYSTORE_FILE")
-            val keystorePassword = System.getenv("KEYSTORE_PASSWORD")
-            val keyAlias = System.getenv("KEY_ALIAS")
-            val keyPassword = System.getenv("KEY_PASSWORD")
+            // 优先使用注入的签名参数（-Pandroid.injected.signing.*），如果没有则使用环境变量
+            val keystoreFile = project.findProperty("android.injected.signing.store.file") as String?
+                ?: System.getenv("KEYSTORE_FILE")
+            val keystorePassword = project.findProperty("android.injected.signing.store.password") as String?
+                ?: System.getenv("KEYSTORE_PASSWORD")
+            val keyAlias = project.findProperty("android.injected.signing.key.alias") as String?
+                ?: System.getenv("KEY_ALIAS")
+            val keyPassword = project.findProperty("android.injected.signing.key.password") as String?
+                ?: System.getenv("KEY_PASSWORD")
             
-            // 只有在所有环境变量都存在时才配置签名
+            // 只有在所有签名信息都存在时才配置签名
             if (!keystoreFile.isNullOrBlank() && 
                 !keystorePassword.isNullOrBlank() && 
                 !keyAlias.isNullOrBlank() && 
@@ -62,11 +66,7 @@ android {
                     println("⚠ keystore 文件不存在或不是文件: ${keystore.absolutePath}")
                 }
             } else {
-                println("⚠ 签名环境变量未完全设置，将使用未签名的构建")
-                if (keystoreFile.isNullOrBlank()) println("  - KEYSTORE_FILE 未设置")
-                if (keystorePassword.isNullOrBlank()) println("  - KEYSTORE_PASSWORD 未设置")
-                if (keyAlias.isNullOrBlank()) println("  - KEY_ALIAS 未设置")
-                if (keyPassword.isNullOrBlank()) println("  - KEY_PASSWORD 未设置")
+                println("⚠ 签名信息未完全设置，将使用未签名的构建")
             }
         }
     }

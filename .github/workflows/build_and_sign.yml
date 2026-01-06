@@ -23,7 +23,7 @@ jobs:
       - name: Decode Keystore
         # Decode the base64 encoded keystore file from secrets and save it temporarily
         run: |
-          echo "${{ secrets.SIGNING_KEYSTORE_BASE64 }}" | base64 -d > app/release-key.jks
+          echo "${{ secrets.KEYSTORE_FILE_BASE64 }}" | base64 -d > app/release-key.jks
         # Assuming your module is named 'app', adjust the path if necessary
         # We save it inside the module directory or project root temporarily
 
@@ -31,9 +31,9 @@ jobs:
         run: |
           ./gradlew assembleRelease \
             -Pandroid.injected.signing.store.file=$(pwd)/app/release-key.jks \
-            -Pandroid.injected.signing.store.password=${{ secrets.SIGNING_KEYSTORE_PASSWORD }} \
-            -Pandroid.injected.signing.key.alias=${{ secrets.SIGNING_KEY_ALIAS }} \
-            -Pandroid.injected.signing.key.password=${{ secrets.SIGNING_KEY_PASSWORD }}
+            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
         # This command tells Gradle to build the release variant and inject signing properties
         # It uses the temporary keystore file and secrets for passwords/alias.
         # Adjust './gradlew assembleRelease' if you have a multi-module project
