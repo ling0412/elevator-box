@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -24,6 +25,8 @@ fun SettingsCard(
     onStartScreenClick: () -> Unit,
     currentAlgorithm: BalanceCoefficientAlgorithm,
     onAlgorithmClick: () -> Unit,
+    balanceRangeSubtitle: String,
+    onBalanceRangeClick: () -> Unit,
     onExportImportClick: () -> Unit
 ) {
     Card(
@@ -55,6 +58,18 @@ fun SettingsCard(
                     BalanceCoefficientAlgorithm.LINEAR_REGRESSION -> "当前: 线性拟合算法"
                 },
                 onClick = onAlgorithmClick
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.2f)
+            )
+
+            SettingItem(
+                icon = Icons.Default.Tune,
+                title = "平衡系数范围",
+                subtitle = balanceRangeSubtitle,
+                onClick = onBalanceRangeClick
             )
 
             HorizontalDivider(

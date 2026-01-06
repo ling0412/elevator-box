@@ -14,12 +14,18 @@ object RecommendedBlocksCalculator {
      * @param currentBalanceCoefficient 当前平衡系数 K
      * @param ratedLoadVal 额定载重
      * @param singleBlockWeightVal 单个砝码的重量
+     * @param targetKMin 目标 K 值最小值（默认 45.0）
+     * @param targetKMax 目标 K 值最大值（默认 50.0）
+     * @param idealK 理想 K 值（默认 47.5）
      * @return 推荐方案的字符串描述
      */
     fun calculate(
         currentBalanceCoefficient: Double?,
         ratedLoadVal: Double?,
-        singleBlockWeightVal: Double?
+        singleBlockWeightVal: Double?,
+        targetKMin: Double = 45.0,
+        targetKMax: Double = 50.0,
+        idealK: Double = 47.5
     ): String? {
         // 输入校验
         if (ratedLoadVal == null || singleBlockWeightVal == null || currentBalanceCoefficient == null ||
@@ -43,10 +49,7 @@ object RecommendedBlocksCalculator {
                 return@buildString
             }
 
-            // 定义目标 K 值范围和最佳 K 值
-            val targetKMin = 45.0
-            val targetKMax = 50.0
-            val idealK = 47.5
+            // 使用传入的目标 K 值范围和最佳 K 值（已在参数中定义）
 
             val feasibleOptions = mutableListOf<Triple<Int, Double, Double>>() // (delta, theoreticalBlocks, newK)
             var bestDelta: Int? = null

@@ -495,10 +495,18 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
             data.balanceCoefficientK
         }
 
+        // 从 repository 读取平衡系数范围设置
+        val targetKMin = repository.getBalanceRangeMin().toDouble()
+        val targetKMax = repository.getBalanceRangeMax().toDouble()
+        val idealK = repository.getBalanceIdeal().toDouble()
+
         data.recommendedBlocksMessage = RecommendedBlocksCalculator.calculate(
             currentBalanceCoefficient = currentK,
             ratedLoadVal = data.ratedLoad.toDoubleOrNull(),
-            singleBlockWeightVal = data.counterweightWeight.toDoubleOrNull()
+            singleBlockWeightVal = data.counterweightWeight.toDoubleOrNull(),
+            targetKMin = targetKMin,
+            targetKMax = targetKMax,
+            idealK = idealK
         )
     }
 

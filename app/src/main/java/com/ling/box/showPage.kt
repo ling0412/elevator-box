@@ -35,8 +35,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import com.ling.box.calculator.model.BalanceCoefficientAlgorithm
+import com.ling.box.calculator.repository.ElevatorRepository
 import com.ling.box.settings.components.AlgorithmSelectionDialog
 import com.ling.box.settings.components.AppInfoCard
+import com.ling.box.settings.components.BalanceRangeSettingsDialog
 import com.ling.box.settings.components.ExportImportDialog
 import com.ling.box.settings.components.LicenseDialog
 import com.ling.box.settings.components.SettingsCard
@@ -65,6 +67,7 @@ fun ShowPage(
     val startScreenIndex = remember { mutableIntStateOf(sharedPreferences.getInt("start_screen_index", 0)) }
     val showStartScreenDialog = remember { mutableStateOf(false) }
     val showAlgorithmDialog = remember { mutableStateOf(false) }
+    val showBalanceRangeDialog = remember { mutableStateOf(false) }
     
     // 读取当前算法选择
     val currentAlgorithm = remember {
@@ -73,6 +76,17 @@ fun ShowPage(
                 calculatorPrefs.getInt("balance_coefficient_algorithm", BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION.ordinal)
             ) ?: BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION
         )
+    }
+    
+    // 读取当前平衡系数范围设置
+    val repository = remember { ElevatorRepository(context) }
+    val balanceRangeMin = remember { mutableStateOf<Float>(repository.getBalanceRangeMin()) }
+    val balanceRangeMax = remember { mutableStateOf<Float>(repository.getBalanceRangeMax()) }
+    val balanceIdeal = remember { mutableStateOf<Float>(repository.getBalanceIdeal()) }
+    
+    // 生成设置项的副标题
+    val balanceRangeSubtitle = remember(balanceRangeMin.value, balanceRangeMax.value, balanceIdeal.value) {
+        "范围: ${String.format("%.1f", balanceRangeMin.value)}%-${String.format("%.1f", balanceRangeMax.value)}%, 最佳: ${String.format("%.1f", balanceIdeal.value)}%"
     }
 
     val screenTitles = remember {
@@ -254,6 +268,8 @@ fun ShowPage(
                 onStartScreenClick = { showStartScreenDialog.value = true },
                 currentAlgorithm = currentAlgorithm.value,
                 onAlgorithmClick = { showAlgorithmDialog.value = true },
+                balanceRangeSubtitle = balanceRangeSubtitle,
+                onBalanceRangeClick = { showBalanceRangeDialog.value = true },
                 onExportImportClick = { showExportImportDialog = true }
             )
 
@@ -325,6 +341,23 @@ fun ShowPage(
         SettingsUpdateDialog(
             updateInfo = updateInfo!!,
             onDismiss = { showUpdateDialog = false }
+        )
+    }
+    
+    if (showBalanceRangeDialog.value) {
+        BalanceRangeSettingsDialog(
+            currentMin = balanceRangeMin.value,
+            currentMax = balanceRangeMax.value,
+            currentIdeal = balanceIdeal.value,
+            onConfirm = { min, max, ideal ->
+                repository.saveBalanceRangeSettings(min, max, ideal)
+                balanceRangeMin.value = min
+                balanceRangeMax.value = max
+                balanceIdeal.value = ideal
+                showBalanceRangeDialog.value = false
+                Toast.makeText(context, "平衡系数范围设置已保存", Toast.LENGTH_SHORT).show()
+            },
+            onDismiss = { showBalanceRangeDialog.value = false }
         )
     }
 }

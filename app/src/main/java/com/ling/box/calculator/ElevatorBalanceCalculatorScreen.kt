@@ -78,6 +78,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
+import com.ling.box.calculator.repository.ElevatorRepository
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -172,6 +173,7 @@ fun ElevatorBalanceCalculatorScreen(
     viewModel: ElevatorCalculatorViewModel,
     contentPadding: PaddingValues // 接收 Scaffold 传递的内边距
 ) {
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val defaultLoadPercentages = remember { listOf(30, 40, 45, 50, 60) }
     val currentMode = remember(uiState.useCustomBlockInput, uiState.useManualBalance) {
@@ -182,6 +184,11 @@ fun ElevatorBalanceCalculatorScreen(
     }
     val selectedAlgorithm by viewModel.selectedAlgorithm.collectAsStateWithLifecycle()
     var showClearDataDialog by remember { mutableStateOf(false) }
+    
+    // 平衡系数范围设置
+    val repository = remember { ElevatorRepository(context) }
+    val balanceRangeMin = repository.getBalanceRangeMin().toDouble()
+    val balanceRangeMax = repository.getBalanceRangeMax().toDouble()
 
     val layoutDirection = LocalLayoutDirection.current
     Surface(
@@ -556,7 +563,9 @@ fun ElevatorBalanceCalculatorScreen(
                 balanceCoefficientK = uiState.balanceCoefficientK,
                 upwardCurrentPoints = uiState.upwardCurrentPoints,
                 downwardCurrentPoints = uiState.downwardCurrentPoints,
-                hasActualIntersection = uiState.hasActualIntersection
+                hasActualIntersection = uiState.hasActualIntersection,
+                balanceRangeMin = balanceRangeMin,
+                balanceRangeMax = balanceRangeMax
             )
 
             if (currentMode == CalculatorMode.CUSTOM_BLOCKS) {
@@ -895,7 +904,9 @@ fun ElevatorBalanceCalculatorScreen(
 
             BalanceWarningSection(
                 recommendedBlocksMessage = uiState.recommendedBlocksMessage,
-                displayBalanceCoefficient = uiState.balanceCoefficientK
+                displayBalanceCoefficient = uiState.balanceCoefficientK,
+                balanceRangeMin = balanceRangeMin,
+                balanceRangeMax = balanceRangeMax
             )
 
             uiState.balanceCoefficient?.let { totalPercent ->

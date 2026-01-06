@@ -41,7 +41,9 @@ fun BalanceCoefficientDisplay(
     balanceCoefficientK: Double?,
     upwardCurrentPoints: List<Pair<Double, Float>>,
     downwardCurrentPoints: List<Pair<Double, Float>>,
-    hasActualIntersection: Boolean
+    hasActualIntersection: Boolean,
+    balanceRangeMin: Double = 45.0,
+    balanceRangeMax: Double = 50.0
 ) {
     val (displayValue, dataStatus) = remember(useManualBalance, manualBalanceCoefficientK, balanceCoefficientK, hasActualIntersection, upwardCurrentPoints, downwardCurrentPoints) {
         val value = if (useManualBalance) {
@@ -128,7 +130,7 @@ fun BalanceCoefficientDisplay(
                 DataStatus.NORMAL -> {
                     val value = displayValue ?: 0.0
                     val (color, statusText) = when {
-                        value > 45.0 && value < 50.0 -> Pair(MaterialTheme.colorScheme.primary, "理想范围")
+                        value > balanceRangeMin && value < balanceRangeMax -> Pair(MaterialTheme.colorScheme.primary, "理想范围")
                         else -> Pair(MaterialTheme.colorScheme.error, "超出范围")
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -152,7 +154,7 @@ fun BalanceCoefficientDisplay(
             val value = displayValue
             val progressColor = when (dataStatus) {
                 DataStatus.ACCURACY_WARNING -> Color(0xFFFFC107)
-                DataStatus.NORMAL -> if (value > 45.0 && value < 50.0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                DataStatus.NORMAL -> if (value > balanceRangeMin && value < balanceRangeMax) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 else -> Color.Transparent
             }
 

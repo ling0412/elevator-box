@@ -39,7 +39,9 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun BalanceWarningSection(
     recommendedBlocksMessage: String?,
-    displayBalanceCoefficient: Double?
+    displayBalanceCoefficient: Double?,
+    balanceRangeMin: Double = 45.0,
+    balanceRangeMax: Double = 50.0
 ) {
     var expanded by remember { mutableStateOf(false) }
     val feasibleOptions = remember(recommendedBlocksMessage) {
@@ -152,7 +154,7 @@ fun BalanceWarningSection(
     val showWarning = recommendedBlocksMessage.isNullOrEmpty() &&
             displayBalanceCoefficient != null &&
             displayBalanceCoefficient != 0.0 &&
-            (displayBalanceCoefficient <= 45.0 || displayBalanceCoefficient >= 50.0)
+            (displayBalanceCoefficient <= balanceRangeMin || displayBalanceCoefficient >= balanceRangeMax)
 
     AnimatedVisibility(
         visible = showWarning,
@@ -180,7 +182,7 @@ fun BalanceWarningSection(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "当前平衡系数 ${"%.2f".format(coeff)}% 超出推荐范围 (45%-50%)",
+                    text = "当前平衡系数 ${"%.2f".format(coeff)}% 超出推荐范围 (${"%.1f".format(balanceRangeMin)}%-${"%.1f".format(balanceRangeMax)}%)",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error
                 )

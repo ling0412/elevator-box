@@ -19,6 +19,16 @@ class ElevatorRepository(context: Context) {
         private const val PREFS_NAME = "elevator_calculator_prefs"
         private const val ELEVATOR_COUNT_KEY = "elevator_count"
         private const val LAST_ACCESS_TIME_PREFIX = "last_access_time_"
+        
+        // 平衡系数范围设置
+        private const val BALANCE_RANGE_MIN_KEY = "balance_range_min"
+        private const val BALANCE_RANGE_MAX_KEY = "balance_range_max"
+        private const val BALANCE_IDEAL_KEY = "balance_ideal"
+        
+        // 默认值
+        const val DEFAULT_BALANCE_RANGE_MIN = 45.0f
+        const val DEFAULT_BALANCE_RANGE_MAX = 50.0f
+        const val DEFAULT_BALANCE_IDEAL = 47.5f
     }
     
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -233,6 +243,37 @@ class ElevatorRepository(context: Context) {
      */
     fun getAlgorithmSelection(defaultOrdinal: Int): Int {
         return prefs.getInt("balance_coefficient_algorithm", defaultOrdinal)
+    }
+    
+    /**
+     * 保存平衡系数范围设置
+     */
+    fun saveBalanceRangeSettings(min: Float, max: Float, ideal: Float) {
+        editor.putFloat(BALANCE_RANGE_MIN_KEY, min)
+            .putFloat(BALANCE_RANGE_MAX_KEY, max)
+            .putFloat(BALANCE_IDEAL_KEY, ideal)
+            .apply()
+    }
+    
+    /**
+     * 获取平衡系数最小值
+     */
+    fun getBalanceRangeMin(): Float {
+        return prefs.getFloat(BALANCE_RANGE_MIN_KEY, DEFAULT_BALANCE_RANGE_MIN)
+    }
+    
+    /**
+     * 获取平衡系数最大值
+     */
+    fun getBalanceRangeMax(): Float {
+        return prefs.getFloat(BALANCE_RANGE_MAX_KEY, DEFAULT_BALANCE_RANGE_MAX)
+    }
+    
+    /**
+     * 获取理想平衡系数
+     */
+    fun getBalanceIdeal(): Float {
+        return prefs.getFloat(BALANCE_IDEAL_KEY, DEFAULT_BALANCE_IDEAL)
     }
     
     /**
