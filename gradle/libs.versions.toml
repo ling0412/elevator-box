@@ -1,22 +1,22 @@
 # libs.versions.toml
 
 [versions]
-agp = "8.13.1"
-kotlin = "2.2.21"
+agp = "8.13.2"
+kotlin = "2.3.0"
 # Compose BOM 版本
-composeBom = "2025.11.00"
+composeBom = "2025.12.01"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
-lifecycle = "2.9.4" # 用于 lifecycle-runtime-ktx 和 lifecycle-viewmodel-compose
-activityCompose = "1.11.0"
+lifecycle = "2.10.0" # 用于 lifecycle-runtime-ktx 和 lifecycle-viewmodel-compose
+activityCompose = "1.12.2"
 # Kotlinx Serialization 版本
 kotlinxSerialization = "1.9.0"
 # OkHttp 版本
-okhttp = "5.3.0"
-aboutLibraries = "13.1.0"
-foundationLayout = "1.9.4"
+okhttp = "5.3.2"
+aboutLibraries = "13.2.1"
+foundationLayout = "1.10.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
