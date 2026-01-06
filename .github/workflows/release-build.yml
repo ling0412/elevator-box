@@ -60,20 +60,43 @@ jobs:
       
     - name: 构建 Release APK
       run: |
-        if [ -f app/release-key.jks ] && \
-           [ -n "${{ secrets.KEYSTORE_PASSWORD }}" ] && \
-           [ -n "${{ secrets.KEY_ALIAS }}" ] && \
-           [ -n "${{ secrets.KEY_PASSWORD }}" ]; then
-          echo "使用注入签名属性构建签名 APK..."
-          ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file=$(pwd)/app/release-key.jks \
-            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
-            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
-            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }} \
-            --no-daemon
-        else
-          echo "构建未签名的 APK..."
-          ./gradlew assembleRelease --no-daemon
+        MAX_RETRIES=3
+        RETRY_COUNT=0
+        BUILD_SUCCESS=false
+        
+        while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$BUILD_SUCCESS" = false ]; do
+          RETRY_COUNT=$((RETRY_COUNT + 1))
+          echo "尝试构建 (第 $RETRY_COUNT 次)..."
+          
+          if [ -f app/release-key.jks ] && \
+             [ -n "${{ secrets.KEYSTORE_PASSWORD }}" ] && \
+             [ -n "${{ secrets.KEY_ALIAS }}" ] && \
+             [ -n "${{ secrets.KEY_PASSWORD }}" ]; then
+            echo "使用注入签名属性构建签名 APK..."
+            if ./gradlew assembleRelease \
+              -Pandroid.injected.signing.store.file=$(pwd)/app/release-key.jks \
+              -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+              -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+              -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }} \
+              --no-daemon; then
+              BUILD_SUCCESS=true
+            fi
+          else
+            echo "构建未签名的 APK..."
+            if ./gradlew assembleRelease --no-daemon; then
+              BUILD_SUCCESS=true
+            fi
+          fi
+          
+          if [ "$BUILD_SUCCESS" = false ] && [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+            echo "构建失败，等待 10 秒后重试..."
+            sleep 10
+          fi
+        done
+        
+        if [ "$BUILD_SUCCESS" = false ]; then
+          echo "构建失败，已重试 $MAX_RETRIES 次"
+          exit 1
         fi
       
     - name: 上传 APK 到 Release

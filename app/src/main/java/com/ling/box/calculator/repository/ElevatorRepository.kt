@@ -125,7 +125,14 @@ class ElevatorRepository(context: Context) {
         val result = mutableListOf<UnitState>()
         if (count > 0) {
             for (i in 0 until count) {
-                result.add(loadState(i))
+                try {
+                    result.add(loadState(i))
+                } catch (e: Exception) {
+                    // 如果加载某个电梯失败，记录错误并跳过
+                    android.util.Log.e("ElevatorRepository", "加载电梯 $i 失败", e)
+                    // 可以选择创建一个默认的电梯或跳过
+                    // 这里我们跳过损坏的数据，继续加载其他电梯
+                }
             }
         }
         return result
@@ -142,34 +149,56 @@ class ElevatorRepository(context: Context) {
         val defaultCreationDate = loadedCreationDate 
             ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
+        // 安全加载 customBlockCounts，防止数据损坏
         val loadedCustomBlockCounts = SnapshotStateList<String>().apply {
-            val size = prefs.getInt(prefix + "customBlockCounts_size", 0)
-            repeat(size) { index -> 
-                add(prefs.getString(prefix + "customBlockCount_${index}", "") ?: "") 
+            try {
+                val size = prefs.getInt(prefix + "customBlockCounts_size", 0).coerceAtLeast(0)
+                repeat(size) { index -> 
+                    val value = prefs.getString(prefix + "customBlockCount_${index}", "") ?: ""
+                    add(value)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ElevatorRepository", "加载customBlockCounts失败", e)
+                // 如果加载失败，使用空列表
             }
         }
 
+        // 安全加载 currentReadings，防止数据损坏
         val loadedCurrentReadings = SnapshotStateList<SnapshotStateList<String>>().apply {
-            // 上行电流
-            val size0 = prefs.getInt(prefix + "currentReadings_0_size", 0)
-            add(SnapshotStateList<String>().apply {
-                repeat(size0) { pointIndex -> 
-                    add(prefs.getString(prefix + "currentReading_0_${pointIndex}", "") ?: "") 
-                }
-            })
-            // 下行电流
-            val size1 = prefs.getInt(prefix + "currentReadings_1_size", 0)
-            add(SnapshotStateList<String>().apply {
-                repeat(size1) { pointIndex -> 
-                    add(prefs.getString(prefix + "currentReading_1_${pointIndex}", "") ?: "") 
-                }
-            })
+            try {
+                // 上行电流
+                val size0 = prefs.getInt(prefix + "currentReadings_0_size", 0).coerceAtLeast(0)
+                add(SnapshotStateList<String>().apply {
+                    repeat(size0) { pointIndex -> 
+                        val value = prefs.getString(prefix + "currentReading_0_${pointIndex}", "") ?: ""
+                        add(value)
+                    }
+                })
+                // 下行电流
+                val size1 = prefs.getInt(prefix + "currentReadings_1_size", 0).coerceAtLeast(0)
+                add(SnapshotStateList<String>().apply {
+                    repeat(size1) { pointIndex -> 
+                        val value = prefs.getString(prefix + "currentReading_1_${pointIndex}", "") ?: ""
+                        add(value)
+                    }
+                })
+            } catch (e: Exception) {
+                android.util.Log.e("ElevatorRepository", "加载currentReadings失败", e)
+                // 如果加载失败，创建两个空列表
+                add(SnapshotStateList())
+                add(SnapshotStateList())
+            }
         }
 
         // 如果加载后 customBlockCounts 为空，确保添加一个初始空行
         if (loadedCustomBlockCounts.isEmpty()) {
             loadedCustomBlockCounts.add("")
             loadedCurrentReadings.forEach { it.add("") }
+        }
+
+        // 确保 currentReadings 有两个方向
+        while (loadedCurrentReadings.size < 2) {
+            loadedCurrentReadings.add(SnapshotStateList())
         }
 
         return UnitState(
@@ -183,6 +212,7 @@ class ElevatorRepository(context: Context) {
             useCustomBlockInput = prefs.getBoolean(prefix + "useCustomBlockInput", true),
             customBlockCounts = loadedCustomBlockCounts,
             customBlockPercentages = SnapshotStateList<Double?>().apply {
+                // v1.5.0新增字段，确保与customBlockCounts大小一致
                 repeat(loadedCustomBlockCounts.size) { add(null) }
             },
             currentReadings = loadedCurrentReadings,

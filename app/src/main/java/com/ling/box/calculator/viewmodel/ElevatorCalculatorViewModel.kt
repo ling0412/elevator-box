@@ -122,33 +122,40 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
         )
 
     init {
-        val loadedElevators = repository.loadInitialElevators()
-        _unitStateList.clear()
-        _unitStateList.addAll(loadedElevators)
+        try {
+            val loadedElevators = repository.loadInitialElevators()
+            _unitStateList.clear()
+            _unitStateList.addAll(loadedElevators)
 
-        if (_unitStateList.isEmpty()) {
+            if (_unitStateList.isEmpty()) {
+                addElevator()
+            }
+            
+            // 自动选择最近访问的电梯
+            val savedIndex = repository.getCurrentElevatorIndex()
+            val mostRecentIndex = if (_unitStateList.isNotEmpty()) {
+                _unitStateList.indices.maxByOrNull { repository.getLastAccessTime(it) } 
+                    ?: savedIndex.coerceIn(0, _unitStateList.lastIndex)
+            } else {
+                0
+            }
+            
+            _currentElevatorIndex.value = mostRecentIndex.coerceIn(0, _unitStateList.lastIndex.coerceAtLeast(0))
+            repository.saveCurrentElevatorIndex(_currentElevatorIndex.value)
+            repository.updateLastAccessTime(_currentElevatorIndex.value)
+            
+            // 确保当前电梯有至少一个块数输入行
+            if (getCurrentData()?.useCustomBlockInput == true && getCurrentData()?.customBlockCounts?.isEmpty() == true) {
+                getCurrentData()?.addInitialBlockSlot()
+            }
+
+            triggerFullRecalculation()
+        } catch (e: Exception) {
+            // 如果加载数据失败，创建一个新的默认电梯，避免应用崩溃
+            android.util.Log.e("ElevatorCalculatorViewModel", "初始化失败，创建默认电梯", e)
+            _unitStateList.clear()
             addElevator()
         }
-        
-        // 自动选择最近访问的电梯
-        val savedIndex = repository.getCurrentElevatorIndex()
-        val mostRecentIndex = if (_unitStateList.isNotEmpty()) {
-            _unitStateList.indices.maxByOrNull { repository.getLastAccessTime(it) } 
-                ?: savedIndex.coerceIn(0, _unitStateList.lastIndex)
-        } else {
-            0
-        }
-        
-        _currentElevatorIndex.value = mostRecentIndex.coerceIn(0, _unitStateList.lastIndex.coerceAtLeast(0))
-        repository.saveCurrentElevatorIndex(_currentElevatorIndex.value)
-        repository.updateLastAccessTime(_currentElevatorIndex.value)
-        
-        // 确保当前电梯有至少一个块数输入行
-        if (getCurrentData()?.useCustomBlockInput == true && getCurrentData()?.customBlockCounts?.isEmpty() == true) {
-            getCurrentData()?.addInitialBlockSlot()
-        }
-
-        triggerFullRecalculation()
     }
 
     // --- 更新状态的公共方法 ---

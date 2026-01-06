@@ -31,7 +31,9 @@ object PrefsHelper {
             try {
                 json.decodeFromString<Map<String, ElevatorData>>(jsonString)
             } catch (e: Exception) {
+                android.util.Log.e("PrefsHelper", "加载电梯数据失败，可能是版本不兼容", e)
                 e.printStackTrace()
+                // 返回空Map而不是崩溃，让用户可以重新输入数据
                 emptyMap()
             }
         } else {

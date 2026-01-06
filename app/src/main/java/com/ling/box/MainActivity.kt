@@ -61,6 +61,7 @@ import com.ling.box.update.data.UpdateInfo
 import com.ling.box.update.utils.compareVersions
 import com.ling.box.update.utils.fetchLatestReleaseInfo
 import com.ling.box.update.utils.getAppVersionName
+import com.ling.box.utils.VersionMigrationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -69,6 +70,9 @@ import java.util.concurrent.TimeUnit
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 在UI加载之前执行版本迁移检查
+        VersionMigrationHelper.performMigrationIfNeeded(this)
 
         enableEdgeToEdge() // 启用边缘到边缘绘制
         setContent {

@@ -551,7 +551,16 @@ class LinearRegressionCalculator : BalanceCoefficientCalculator {
             val weightedAverage = balancePoints.sumOf { it.first * it.second } / balancePoints.sumOf { it.second }
             val finalLowerBound = if (hasConstraintConflict) 0.0 else lowerBound
             val finalUpperBound = if (hasConstraintConflict) 200.0 else upperBound
-            val constrainedK = weightedAverage.coerceIn(finalLowerBound, finalUpperBound)
+            
+            // 检查范围是否有效：如果下限大于上限，直接返回 null（无有效结果）
+            val safeLowerBound = finalLowerBound.coerceAtLeast(-50.0)
+            val safeUpperBound = finalUpperBound.coerceAtMost(200.0)
+            if (safeLowerBound > safeUpperBound) {
+                // 范围无效，当作异常处理，不显示结果（类似直线交点算法）
+                return Triple(null, false, averageR2)
+            }
+            
+            val constrainedK = weightedAverage.coerceIn(safeLowerBound, safeUpperBound)
             val maxX = matchedPoints.last().loadPercentage
             val minX = matchedPoints.first().loadPercentage
             return Triple(constrainedK, constrainedK >= minX && constrainedK <= maxX, averageR2)
@@ -578,12 +587,22 @@ class LinearRegressionCalculator : BalanceCoefficientCalculator {
             
             val finalLowerBound = if (hasConstraintConflict) minX else lowerBound
             val finalUpperBound = if (hasConstraintConflict) maxX * 1.1 else upperBound
+            
+            // 检查范围是否有效：如果下限大于上限，直接返回 null（无有效结果）
+            val safeLowerBound = finalLowerBound.coerceAtLeast(-50.0)
+            val safeUpperBound = finalUpperBound.coerceAtMost(200.0)
+            if (safeLowerBound > safeUpperBound) {
+                // 范围无效，当作异常处理，不显示结果（类似直线交点算法）
+                return Triple(null, false, averageR2)
+            }
+            
             val estimatedK = if (hasConstraintConflict) {
                 (minX + maxX) / 2.0
             } else {
                 calculateFinalEstimate(matchedPoints, allUpwardLess, allUpwardGreater, minX, maxX, dataRange, finalLowerBound, finalUpperBound)
             }
-            return Triple(estimatedK.coerceIn(finalLowerBound.coerceAtLeast(-50.0), finalUpperBound.coerceAtMost(200.0)), false, averageR2)
+            
+            return Triple(estimatedK.coerceIn(safeLowerBound, safeUpperBound), false, averageR2)
         }
     }
     
