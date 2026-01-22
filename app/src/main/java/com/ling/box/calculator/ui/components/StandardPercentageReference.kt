@@ -52,7 +52,7 @@ fun StandardPercentageReference(
     onBlockCountClick: (Int) -> Unit
 ) {
     val combinedPercentages = remember(defaultLoadPercentages) {
-        (defaultLoadPercentages + listOf(100, 125)).distinct().sorted()
+        (defaultLoadPercentages + listOf(100, 110, 125)).distinct().sorted()
     }
 
     val showData = ratedLoadValue != 0.0 && blockWeightValue != 0.0
