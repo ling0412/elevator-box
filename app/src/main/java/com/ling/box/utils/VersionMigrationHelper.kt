@@ -139,7 +139,7 @@ object VersionMigrationHelper {
      * 解析版本号为数字代码
      * 例如: "1.5.0" -> 10500, "1.4.0" -> 10400, "1.10.2" -> 11002
      */
-    private fun parseVersionCode(version: String): Int {
+    internal fun parseVersionCode(version: String): Int {
         return try {
             val parts = version.split(".")
             if (parts.size >= 2) {

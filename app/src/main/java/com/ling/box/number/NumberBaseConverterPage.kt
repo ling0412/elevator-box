@@ -717,7 +717,7 @@ private fun ResultCard(
 }
 
 // 进制检测逻辑
-private fun detectInputBase(input: String, mode: InputMode): Pair<String, Int?> {
+internal fun detectInputBase(input: String, mode: InputMode): Pair<String, Int?> {
     if (input.isEmpty())  return Pair("未知", null)
 
     return when {
@@ -732,7 +732,7 @@ private fun detectInputBase(input: String, mode: InputMode): Pair<String, Int?> 
 
 
 // 进制计算逻辑
-private fun calculateAllBases(input: String, fromBase: Int): Map<String, String> {
+internal fun calculateAllBases(input: String, fromBase: Int): Map<String, String> {
     val decimal = try {
         BigInteger(input, fromBase)
     } catch (_: NumberFormatException) {
