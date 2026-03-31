@@ -13,6 +13,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -26,7 +27,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -54,11 +54,13 @@ import android.content.ClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import java.math.BigInteger
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -86,9 +88,10 @@ fun NumberBaseConverterPage() {
         else calculateAllBases(inputText, selectedBase)
     }
 
-    // 检测是否为大屏幕模式
-    val configuration = LocalConfiguration.current
-    val isExpandedScreen = configuration.screenWidthDp >= 600
+    // 检测是否为大屏幕模式（使用窗口尺寸而不是 Configuration）
+    val windowInfo = LocalWindowInfo.current
+    val density = LocalDensity.current
+    val isExpandedScreen = with(density) { windowInfo.containerSize.width.toDp() >= 600.dp }
 
     if (isExpandedScreen) {
         // 大屏幕模式：并排布局
@@ -144,6 +147,8 @@ fun NumberBaseConverterPage() {
                 if (conversionResults.isNotEmpty()) {
                     ConversionResultsSection(
                         results = conversionResults,
+                        inputText = inputText,
+                        selectedBase = selectedBase,
                         onCopy = { value ->
                             val clip = ClipData.newPlainText("转换结果", value)
                             clipboardManager.setPrimaryClip(clip)
@@ -202,6 +207,8 @@ fun NumberBaseConverterPage() {
             if (conversionResults.isNotEmpty()) {
                 ConversionResultsSection(
                     results = conversionResults,
+                    inputText = inputText,
+                    selectedBase = selectedBase,
                     onCopy = { value ->
                         val clip = ClipData.newPlainText("转换结果", value)
                         clipboardManager.setPrimaryClip(clip)
@@ -279,7 +286,11 @@ private fun InputControlSection(
                             .uppercase()
                             .filter { it.isDigit() || (it in 'A'..'F') }
                     }
-                    if (filtered.length <= 16) onInputChange(filtered)
+                    val maxLength = when (currentMode) {
+                        InputMode.NUMERIC -> 16
+                        InputMode.ALPHANUMERIC -> 20 // 20 位十六进制 = 80 位二进制（80 层）
+                    }
+                    if (filtered.length <= maxLength) onInputChange(filtered)
                 },
                 label = {
                     Text(
@@ -431,6 +442,8 @@ private fun BaseIndicator(
 @Composable
 private fun ConversionResultsSection(
     results: Map<String, String>,
+    inputText: String,
+    selectedBase: Int?,
     onCopy: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -457,7 +470,7 @@ private fun ConversionResultsSection(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // 二进制位分析
+                // 二进制位分析 & 层高表识别（仅在 16 进制模式下显示）
                 if (baseName == "二进制") {
                     BinaryBitAnalysis(
                         binaryValue = value,
@@ -465,6 +478,16 @@ private fun ConversionResultsSection(
                             .fillMaxWidth()
                             .padding(top = 4.dp)
                     )
+                    if (selectedBase == 16) {
+                        FloorHeightTableAnalysis(
+                            binaryValue = value,
+                            sourceBase = selectedBase,
+                            sourceInput = inputText,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp)
+                        )
+                    }
                 }
             }
         }
@@ -490,7 +513,8 @@ private fun BinaryBitAnalysis(
         bitPositionsFromZero.map { it + 1 }
     }
 
-    var showZeroBased by remember { mutableStateOf(false) }
+    // 默认从 0 计数显示
+    var showZeroBased by remember { mutableStateOf(true) }
 
     Surface(
         modifier = modifier.clickable { showZeroBased = !showZeroBased }, // 添加点击事件
@@ -536,6 +560,119 @@ private fun BinaryBitAnalysis(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
+            }
+        }
+    }
+}
+
+// 层高表识别组件
+@Composable
+private fun FloorHeightTableAnalysis(
+    binaryValue: String,
+    sourceBase: Int?,
+    sourceInput: String,
+    modifier: Modifier = Modifier
+) {
+    // 根据源进制补齐前导零，确保十六进制 "7F7F" 解读为 16 层而非 15 层
+    val paddedBinary = remember(binaryValue, sourceBase, sourceInput) {
+        when (sourceBase) {
+            16 -> binaryValue.padStart(sourceInput.length * 4, '0')
+            8 -> binaryValue.padStart(sourceInput.length * 3, '0')
+            else -> binaryValue
+        }
+    }
+
+    val totalFloors = paddedBinary.length
+    val totalStops = remember(paddedBinary) { paddedBinary.count { it == '1' } }
+
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.small,
+        tonalElevation = 1.dp,
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                text = "层高表:",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "${totalFloors}层${totalStops}站",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold
+                )
+            )
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                for (i in paddedBinary.indices) {
+                    val floorNumber = totalFloors - i
+                    val opens = paddedBinary[i] == '1'
+                    Surface(
+                        shape = MaterialTheme.shapes.extraSmall,
+                        color = if (opens) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.errorContainer
+                        }
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "${floorNumber}F",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = if (opens) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onErrorContainer
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Surface(
+                        shape = MaterialTheme.shapes.extraSmall,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.size(12.dp),
+                        content = {}
+                    )
+                    Text("开门", style = MaterialTheme.typography.labelSmall)
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Surface(
+                        shape = MaterialTheme.shapes.extraSmall,
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        modifier = Modifier.size(12.dp),
+                        content = {}
+                    )
+                    Text("不开门", style = MaterialTheme.typography.labelSmall)
+                }
             }
         }
     }
@@ -609,7 +746,7 @@ private fun detectInputBase(input: String, mode: InputMode): Pair<String, Int?> 
 // 进制计算逻辑
 private fun calculateAllBases(input: String, fromBase: Int): Map<String, String> {
     val decimal = try {
-        input.toLong(fromBase)
+        BigInteger(input, fromBase)
     } catch (_: NumberFormatException) {
         return emptyMap()
     }
