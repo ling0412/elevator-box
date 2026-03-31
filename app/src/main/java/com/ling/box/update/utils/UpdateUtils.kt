@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
@@ -29,24 +28,23 @@ suspend fun fetchLatestReleaseInfo(owner: String = UpdateConfig.GITHUB_OWNER, re
         .build()
 
     try {
-        val response: Response = httpClient.newCall(request).execute()
-        val responseCode = response.code
+        httpClient.newCall(request).execute().use { response ->
+            val responseCode = response.code
+            Log.d("UpdateCheck", "OkHttp Response Code: $responseCode")
 
-        Log.d("UpdateCheck", "OkHttp Response Code: $responseCode")
-
-        if (response.isSuccessful) {
-            val responseBody = response.body?.string()
-            Log.d("UpdateCheck", "OkHttp Response Body: $responseBody")
-            responseBody?.let {
-                val jsonObject = JSONObject(it)
-                val tagName = jsonObject.getString("tag_name").removePrefix("v")
-                val body = jsonObject.optString("body", "没有提供更新说明。")
-                val htmlUrl = jsonObject.getString("html_url")
-                return@withContext Result.success(UpdateInfo(tagName, body, htmlUrl))
-            } ?: return@withContext Result.failure(Exception("响应体为空"))
-        } else {
-            Log.e("UpdateCheck", "OkHttp Error Response: ${response.body?.string()}")
-            return@withContext Result.failure(Exception("请求失败，响应码: $responseCode"))
+            if (response.isSuccessful) {
+                val responseBody = response.body?.string()
+                Log.d("UpdateCheck", "OkHttp Response Body: $responseBody")
+                responseBody?.let {
+                    val jsonObject = JSONObject(it)
+                    val tagName = jsonObject.getString("tag_name").removePrefix("v")
+                    val body = jsonObject.optString("body", "没有提供更新说明。")
+                    return@withContext Result.success(UpdateInfo(tagName, body))
+                } ?: return@withContext Result.failure(Exception("响应体为空"))
+            } else {
+                Log.e("UpdateCheck", "OkHttp Error Response: ${response.body?.string()}")
+                return@withContext Result.failure(Exception("请求失败，响应码: $responseCode"))
+            }
         }
     } catch (e: Exception) {
         Log.e("UpdateCheck", "OkHttp Network or JSON parsing error", e)

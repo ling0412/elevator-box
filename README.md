@@ -12,7 +12,7 @@
 | **架构**       | MVVM (Model-View-ViewModel)           |
 | **平台兼容性** | 最低 SDK 28 (Android 9.0+)            |
 | **目标版本**   | 目标 SDK 36                           |
-| **构建系统**   | Gradle 8.x                            |
+| **构建系统**   | Gradle 9.x                            |
 
 ## 许可证
 

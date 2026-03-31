@@ -73,7 +73,7 @@ fun ShowPage(
     // 读取当前算法选择
     val currentAlgorithm = remember {
         mutableStateOf(
-            BalanceCoefficientAlgorithm.values().getOrNull(
+            BalanceCoefficientAlgorithm.entries.getOrNull(
                 calculatorPrefs.getInt("balance_coefficient_algorithm", BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION.ordinal)
             ) ?: BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION
         )

@@ -95,36 +95,41 @@ object VersionMigrationHelper {
             // 由于这个字段在加载时会自动初始化为空列表，所以不需要特殊处理
             // 但我们需要确保数据加载时不会因为格式不兼容而崩溃
             
-            // 验证并修复可能损坏的数据
+            val editor = calculatorPrefs.edit()
+            var needsCommit = false
+
             for (i in 0 until elevatorCount) {
                 val prefix = "elevator_${i}_"
-                
-                // 检查必要字段是否存在
+
                 val name = calculatorPrefs.getString(prefix + "name", null)
                 if (name == null) {
                     Log.w(TAG, "电梯 $i 的数据不完整，跳过")
                     continue
                 }
-                
-                // 确保customBlockCounts_size存在
+
                 val customBlockCountsSize = calculatorPrefs.getInt(prefix + "customBlockCounts_size", 0)
                 if (customBlockCountsSize < 0) {
-                    // 修复负数大小
-                    calculatorPrefs.edit().putInt(prefix + "customBlockCounts_size", 0).apply()
+                    editor.putInt(prefix + "customBlockCounts_size", 0)
+                    needsCommit = true
                     Log.w(TAG, "修复电梯 $i 的customBlockCounts_size")
                 }
-                
-                // 确保currentReadings大小有效
+
                 val size0 = calculatorPrefs.getInt(prefix + "currentReadings_0_size", 0)
                 val size1 = calculatorPrefs.getInt(prefix + "currentReadings_1_size", 0)
                 if (size0 < 0) {
-                    calculatorPrefs.edit().putInt(prefix + "currentReadings_0_size", 0).apply()
+                    editor.putInt(prefix + "currentReadings_0_size", 0)
+                    needsCommit = true
                     Log.w(TAG, "修复电梯 $i 的currentReadings_0_size")
                 }
                 if (size1 < 0) {
-                    calculatorPrefs.edit().putInt(prefix + "currentReadings_1_size", 0).apply()
+                    editor.putInt(prefix + "currentReadings_1_size", 0)
+                    needsCommit = true
                     Log.w(TAG, "修复电梯 $i 的currentReadings_1_size")
                 }
+            }
+
+            if (needsCommit) {
+                editor.apply()
             }
             
             Log.i(TAG, "v1.4.0 -> v1.5.0 迁移完成")

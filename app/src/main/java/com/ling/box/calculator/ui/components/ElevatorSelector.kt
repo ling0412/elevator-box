@@ -62,8 +62,8 @@ import com.ling.box.calculator.viewmodel.ElevatorCalculatorViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-// 日期格式化器常量，避免每次重组都创建新实例
 private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+private val DEFAULT_NAME_REGEX = Regex("电梯 \\d+")
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -87,8 +87,8 @@ fun ElevatorSelector(
             val today = LocalDate.now()
 
             allElevatorList.mapIndexedNotNull { originalIndex, unitState ->
-                // 访问名称以建立状态依赖，确保名称变化时能触发重新计算
-                unitState.name.let { }
+                @Suppress("UNUSED_VARIABLE")
+                val name = unitState.name // 读取 name 以建立快照依赖
                 try {
                     val creationDate = LocalDate.parse(unitState.creationDate, DATE_FORMATTER)
                     // 显示最近3天内的电梯
@@ -203,17 +203,10 @@ fun ElevatorSelector(
                                             slideOutVertically(animationSpec = tween(200, easing = LinearOutSlowInEasing)) { fullHeight -> -fullHeight / 2 } + fadeOut(animationSpec = tween(200))
                                 }, label = "ElevatorNameTransition"
                             ) { targetText ->
-                                // 如果是默认格式"电梯 X"，只显示数字；否则显示最后三个字符
-                                val displayedText = if (targetText.matches(Regex("电梯 \\d+"))) {
-                                    // 提取数字部分
+                                val displayedText = if (targetText.matches(DEFAULT_NAME_REGEX)) {
                                     targetText.replace("电梯 ", "")
                                 } else {
-                                    // 自定义名称，显示最后三个字符
-                                    if (targetText.length <= 3) {
-                                        targetText
-                                    } else {
-                                        targetText.takeLast(3)
-                                    }
+                                    if (targetText.length <= 3) targetText else targetText.takeLast(3)
                                 }
                                 Text(
                                     text = displayedText,

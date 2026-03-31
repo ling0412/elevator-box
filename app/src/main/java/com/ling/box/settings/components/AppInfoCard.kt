@@ -17,6 +17,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -32,6 +33,7 @@ fun AppInfoCard(
     onSourceCodeClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val versionName = remember { getAppVersionName(context) }
 
     Card(
         modifier = Modifier
@@ -42,7 +44,7 @@ fun AppInfoCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(vertical = 4.dp)) {
-            VersionItem(currentVersion = getAppVersionName(context))
+            VersionItem(currentVersion = versionName)
 
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -52,7 +54,7 @@ fun AppInfoCard(
             SettingItem(
                 icon = Icons.Filled.Update,
                 title = stringResource(R.string.check_update),
-                subtitle = if (isCheckingForUpdate) stringResource(R.string.checking_update) else stringResource(R.string.current_version_format, getAppVersionName(context)),
+                subtitle = if (isCheckingForUpdate) stringResource(R.string.checking_update) else stringResource(R.string.current_version_format, versionName),
                 onClick = onCheckUpdateClick,
                 trailingContent = {
                     if (isCheckingForUpdate) {
