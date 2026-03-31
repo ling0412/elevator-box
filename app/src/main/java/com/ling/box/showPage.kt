@@ -34,6 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ling.box.calculator.model.BalanceCoefficientAlgorithm
 import com.ling.box.calculator.repository.ElevatorRepository
 import com.ling.box.settings.components.AlgorithmSelectionDialog
@@ -44,12 +46,9 @@ import com.ling.box.settings.components.LicenseDialog
 import com.ling.box.settings.components.SettingsCard
 import com.ling.box.settings.components.SettingsUpdateDialog
 import com.ling.box.settings.components.StartScreenDialog
-import com.ling.box.update.data.UpdateInfo
 import com.ling.box.settings.utils.DataExportImportHelper
 import com.ling.box.update.config.UpdateConfig
-import com.ling.box.update.utils.compareVersions
-import com.ling.box.update.utils.fetchLatestReleaseInfo
-import com.ling.box.update.utils.getAppVersionName
+import com.ling.box.update.viewmodel.UpdateViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -153,41 +152,13 @@ fun ShowPage(
         importFileLauncher.launch("application/json")
     }
 
-    var isCheckingForUpdate by remember { mutableStateOf(false) }
-    var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
-    var showUpdateDialog by remember { mutableStateOf(false) }
+    val updateViewModel: UpdateViewModel = viewModel()
+    val isCheckingForUpdate by updateViewModel.isChecking.collectAsStateWithLifecycle()
+    val updateInfo by updateViewModel.updateInfo.collectAsStateWithLifecycle()
+    val showUpdateDialog by updateViewModel.showDialog.collectAsStateWithLifecycle()
+
     var showLicenseDialog by remember { mutableStateOf(false) }
     var showExportImportDialog by remember { mutableStateOf(false) }
-
-    fun getAppVersionName(): String {
-        return getAppVersionName(context)
-    }
-
-    // --- Function to trigger update check ---
-    fun checkForUpdates() {
-        if (isCheckingForUpdate) return
-
-        isCheckingForUpdate = true
-        coroutineScope.launch {
-            val currentVersion = getAppVersionName()
-
-            val result = fetchLatestReleaseInfo()
-
-            withContext(Dispatchers.Main) {
-                isCheckingForUpdate = false
-                result.onSuccess { latestUpdateInfo ->
-                    if (compareVersions(latestUpdateInfo.latestVersion, currentVersion) > 0) {
-                        updateInfo = latestUpdateInfo
-                        showUpdateDialog = true
-                    } else {
-                        Toast.makeText(context, "当前已是最新版本 ($currentVersion)", Toast.LENGTH_SHORT).show()
-                    }
-                }.onFailure { exception ->
-                    Toast.makeText(context, "检查更新失败: ${exception.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
 
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -247,7 +218,7 @@ fun ShowPage(
             // --- 应用信息卡片 ---
             AppInfoCard(
                 isCheckingForUpdate = isCheckingForUpdate,
-                onCheckUpdateClick = { checkForUpdates() },
+                onCheckUpdateClick = { updateViewModel.checkForUpdates() },
                 onLicenseClick = { showLicenseDialog = true },
                 onSourceCodeClick = {
                     val intent = Intent(Intent.ACTION_VIEW, UpdateConfig.GITHUB_REPO_URL.toUri())
@@ -340,7 +311,7 @@ fun ShowPage(
     if (showUpdateDialog && updateInfo != null) {
         SettingsUpdateDialog(
             updateInfo = updateInfo!!,
-            onDismiss = { showUpdateDialog = false }
+            onDismiss = { updateViewModel.dismissDialog() }
         )
     }
     

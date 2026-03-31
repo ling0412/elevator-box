@@ -11,18 +11,25 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.json.JSONObject
+import java.util.concurrent.TimeUnit
+
+private val httpClient: OkHttpClient by lazy {
+    OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .build()
+}
 
 suspend fun fetchLatestReleaseInfo(owner: String = UpdateConfig.GITHUB_OWNER, repo: String = UpdateConfig.GITHUB_REPO): Result<UpdateInfo> = withContext(Dispatchers.IO) {
     val urlString = UpdateConfig.getLatestReleaseApiUrl()
     Log.d("UpdateCheck", "Fetching URL with OkHttp: $urlString")
-    val client = OkHttpClient()
     val request = Request.Builder()
         .url(urlString)
         .header("Accept", "application/vnd.github.v3+json")
         .build()
 
     try {
-        val response: Response = client.newCall(request).execute()
+        val response: Response = httpClient.newCall(request).execute()
         val responseCode = response.code
 
         Log.d("UpdateCheck", "OkHttp Response Code: $responseCode")

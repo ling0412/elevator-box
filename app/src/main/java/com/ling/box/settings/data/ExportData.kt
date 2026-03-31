@@ -1,6 +1,49 @@
 package com.ling.box.settings.data
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.ling.box.calculator.model.UnitState
 import kotlinx.serialization.Serializable
+
+fun UnitState.toExport(): UnitStateExport = UnitStateExport(
+    name = name,
+    creationDate = creationDate,
+    ratedLoad = ratedLoad,
+    counterweightWeight = counterweightWeight,
+    counterweightBlockWeight = counterweightBlockWeight,
+    manualBalanceCoefficientK = manualBalanceCoefficientK,
+    useManualBalance = useManualBalance,
+    useCustomBlockInput = useCustomBlockInput,
+    customBlockCounts = customBlockCounts.toList(),
+    currentReadings = currentReadings.map { it.toList() }
+)
+
+fun UnitStateExport.toUnitState(): UnitState {
+    val blockCounts = mutableStateListOf<String>().apply { addAll(customBlockCounts) }
+    val readings = mutableStateListOf<SnapshotStateList<String>>().apply {
+        currentReadings.forEach { direction ->
+            add(mutableStateListOf<String>().apply { addAll(direction) })
+        }
+        while (size < 2) add(mutableStateListOf())
+    }
+    if (blockCounts.isEmpty()) {
+        blockCounts.add("")
+        readings.forEach { it.add("") }
+    }
+    return UnitState(
+        name = name,
+        creationDate = creationDate,
+        ratedLoad = ratedLoad,
+        counterweightWeight = counterweightWeight,
+        counterweightBlockWeight = counterweightBlockWeight,
+        manualBalanceCoefficientK = manualBalanceCoefficientK,
+        useManualBalance = useManualBalance,
+        useCustomBlockInput = useCustomBlockInput,
+        customBlockCounts = blockCounts,
+        customBlockPercentages = mutableStateListOf<Double?>().apply { repeat(blockCounts.size) { add(null) } },
+        currentReadings = readings
+    )
+}
 
 /**
  * 用于导出的完整数据模型
