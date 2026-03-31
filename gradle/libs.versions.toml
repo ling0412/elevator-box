@@ -1,7 +1,7 @@
 # libs.versions.toml
 
 [versions]
-agp = "9.0.0"
+agp = "9.1.0"
 kotlin = "2.3.0"
 # Compose BOM 版本
 composeBom = "2026.01.01"
