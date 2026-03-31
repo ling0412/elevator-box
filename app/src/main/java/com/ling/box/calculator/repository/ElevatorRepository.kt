@@ -2,8 +2,8 @@ package com.ling.box.calculator.repository
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.core.content.edit
 import com.ling.box.calculator.model.UnitState
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -32,7 +32,6 @@ class ElevatorRepository(context: Context) {
     }
     
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    private val editor: SharedPreferences.Editor = prefs.edit()
     
     /**
      * 保存电梯列表
@@ -41,14 +40,13 @@ class ElevatorRepository(context: Context) {
         val newCount = unitStateList.size
         val oldCount = prefs.getInt(ELEVATOR_COUNT_KEY, 0)
         
-        // 清理超出范围的旧电梯数据（防止删除电梯后残留数据）
         if (oldCount > newCount) {
             for (i in newCount until oldCount) {
                 clearElevatorData(i)
             }
         }
         
-        editor.putInt(ELEVATOR_COUNT_KEY, newCount).apply()
+        prefs.edit { putInt(ELEVATOR_COUNT_KEY, newCount) }
         unitStateList.forEachIndexed { index, unitState ->
             saveState(index, unitState)
         }
@@ -60,7 +58,14 @@ class ElevatorRepository(context: Context) {
      */
     fun saveState(elevatorIndex: Int, state: UnitState) {
         val prefix = "elevator_${elevatorIndex}_"
-        with(editor) {
+        val oldCustomBlockCountsSize = prefs.getInt(prefix + "customBlockCounts_size", 0)
+        val newCustomBlockCountsSize = state.customBlockCounts.size
+        val oldSize0 = prefs.getInt(prefix + "currentReadings_0_size", 0)
+        val newSize0 = state.currentReadings.getOrNull(0)?.size ?: 0
+        val oldSize1 = prefs.getInt(prefix + "currentReadings_1_size", 0)
+        val newSize1 = state.currentReadings.getOrNull(1)?.size ?: 0
+
+        prefs.edit {
             putString(prefix + "name", state.name)
             putString(prefix + "creationDate", state.creationDate)
             putString(prefix + "ratedLoad", state.ratedLoad)
@@ -70,50 +75,35 @@ class ElevatorRepository(context: Context) {
             putBoolean(prefix + "useManualBalance", state.useManualBalance)
             putBoolean(prefix + "useCustomBlockInput", state.useCustomBlockInput)
 
-            // 清理旧的 customBlockCounts 数据（防止列表缩小时残留旧数据）
-            val oldCustomBlockCountsSize = prefs.getInt(prefix + "customBlockCounts_size", 0)
-            val newCustomBlockCountsSize = state.customBlockCounts.size
             if (oldCustomBlockCountsSize > newCustomBlockCountsSize) {
                 for (i in newCustomBlockCountsSize until oldCustomBlockCountsSize) {
                     remove(prefix + "customBlockCount_${i}")
                 }
             }
-            
-            // 动态保存 customBlockCounts
             putInt(prefix + "customBlockCounts_size", newCustomBlockCountsSize)
-            state.customBlockCounts.forEachIndexed { index, value -> 
-                putString(prefix + "customBlockCount_${index}", value) 
+            state.customBlockCounts.forEachIndexed { index, value ->
+                putString(prefix + "customBlockCount_${index}", value)
             }
 
-            // 清理旧的 currentReadings 数据（防止列表缩小时残留旧数据）
-            val oldSize0 = prefs.getInt(prefix + "currentReadings_0_size", 0)
-            val newSize0 = state.currentReadings.getOrNull(0)?.size ?: 0
             if (oldSize0 > newSize0) {
                 for (i in newSize0 until oldSize0) {
                     remove(prefix + "currentReading_0_${i}")
                 }
             }
-            
-            val oldSize1 = prefs.getInt(prefix + "currentReadings_1_size", 0)
-            val newSize1 = state.currentReadings.getOrNull(1)?.size ?: 0
             if (oldSize1 > newSize1) {
                 for (i in newSize1 until oldSize1) {
                     remove(prefix + "currentReading_1_${i}")
                 }
             }
 
-            // 动态保存 currentReadings
             putInt(prefix + "currentReadings_0_size", newSize0)
-            state.currentReadings.getOrNull(0)?.forEachIndexed { pointIndex, value -> 
-                putString(prefix + "currentReading_0_${pointIndex}", value) 
+            state.currentReadings.getOrNull(0)?.forEachIndexed { pointIndex, value ->
+                putString(prefix + "currentReading_0_${pointIndex}", value)
             }
-
             putInt(prefix + "currentReadings_1_size", newSize1)
-            state.currentReadings.getOrNull(1)?.forEachIndexed { pointIndex, value -> 
-                putString(prefix + "currentReading_1_${pointIndex}", value) 
+            state.currentReadings.getOrNull(1)?.forEachIndexed { pointIndex, value ->
+                putString(prefix + "currentReading_1_${pointIndex}", value)
             }
-
-            apply()
         }
     }
     
@@ -229,8 +219,7 @@ class ElevatorRepository(context: Context) {
      * 更新最后访问时间
      */
     fun updateLastAccessTime(index: Int) {
-        val currentTime = System.currentTimeMillis()
-        editor.putLong(LAST_ACCESS_TIME_PREFIX + index, currentTime).apply()
+        prefs.edit { putLong(LAST_ACCESS_TIME_PREFIX + index, System.currentTimeMillis()) }
     }
     
     /**
@@ -244,14 +233,14 @@ class ElevatorRepository(context: Context) {
      * 删除最后访问时间记录
      */
     fun removeLastAccessTime(index: Int) {
-        editor.remove(LAST_ACCESS_TIME_PREFIX + index).apply()
+        prefs.edit { remove(LAST_ACCESS_TIME_PREFIX + index) }
     }
     
     /**
      * 保存当前电梯索引
      */
     fun saveCurrentElevatorIndex(index: Int) {
-        editor.putInt("current_elevator_index", index).apply()
+        prefs.edit { putInt("current_elevator_index", index) }
     }
     
     /**
@@ -265,7 +254,7 @@ class ElevatorRepository(context: Context) {
      * 保存算法选择
      */
     fun saveAlgorithmSelection(algorithmOrdinal: Int) {
-        editor.putInt("balance_coefficient_algorithm", algorithmOrdinal).apply()
+        prefs.edit { putInt("balance_coefficient_algorithm", algorithmOrdinal) }
     }
     
     /**
@@ -279,10 +268,11 @@ class ElevatorRepository(context: Context) {
      * 保存平衡系数范围设置
      */
     fun saveBalanceRangeSettings(min: Float, max: Float, ideal: Float) {
-        editor.putFloat(BALANCE_RANGE_MIN_KEY, min)
-            .putFloat(BALANCE_RANGE_MAX_KEY, max)
-            .putFloat(BALANCE_IDEAL_KEY, ideal)
-            .apply()
+        prefs.edit {
+            putFloat(BALANCE_RANGE_MIN_KEY, min)
+            putFloat(BALANCE_RANGE_MAX_KEY, max)
+            putFloat(BALANCE_IDEAL_KEY, ideal)
+        }
     }
     
     /**
@@ -312,8 +302,11 @@ class ElevatorRepository(context: Context) {
      */
     fun clearElevatorData(elevatorIndex: Int) {
         val prefix = "elevator_${elevatorIndex}_"
-        with(editor) {
-            // 清理基本字段
+        val customBlockCountsSize = prefs.getInt(prefix + "customBlockCounts_size", 0)
+        val size0 = prefs.getInt(prefix + "currentReadings_0_size", 0)
+        val size1 = prefs.getInt(prefix + "currentReadings_1_size", 0)
+
+        prefs.edit {
             remove(prefix + "name")
             remove(prefix + "creationDate")
             remove(prefix + "ratedLoad")
@@ -322,28 +315,21 @@ class ElevatorRepository(context: Context) {
             remove(prefix + "manualBalanceCoefficientK")
             remove(prefix + "useManualBalance")
             remove(prefix + "useCustomBlockInput")
-            
-            // 清理 customBlockCounts
-            val customBlockCountsSize = prefs.getInt(prefix + "customBlockCounts_size", 0)
+
             for (i in 0 until customBlockCountsSize) {
                 remove(prefix + "customBlockCount_${i}")
             }
             remove(prefix + "customBlockCounts_size")
-            
-            // 清理 currentReadings
-            val size0 = prefs.getInt(prefix + "currentReadings_0_size", 0)
+
             for (i in 0 until size0) {
                 remove(prefix + "currentReading_0_${i}")
             }
             remove(prefix + "currentReadings_0_size")
-            
-            val size1 = prefs.getInt(prefix + "currentReadings_1_size", 0)
+
             for (i in 0 until size1) {
                 remove(prefix + "currentReading_1_${i}")
             }
             remove(prefix + "currentReadings_1_size")
-            
-            apply()
         }
     }
 }

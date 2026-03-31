@@ -1,6 +1,5 @@
 package com.ling.box.calculator
 
-import android.app.Application
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SizeTransform
@@ -86,6 +85,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ling.box.calculator.model.ElevatorUiState
 import com.ling.box.calculator.ui.components.BalanceCoefficientDisplay
 import com.ling.box.calculator.ui.components.BalanceWarningSection
@@ -101,10 +101,7 @@ import com.ling.box.calculator.viewmodel.ElevatorCalculatorViewModel
 @OptIn(ExperimentalAnimationApi::class) // 需要 ExperimentalAnimationApi 注解
 @Composable
 fun CalculatorScreen(paddingValues: PaddingValues) {
-    val context = LocalContext.current
-    val calculatorViewModel: ElevatorCalculatorViewModel = remember {
-        ElevatorCalculatorViewModel(context.applicationContext as Application)
-    }
+    val calculatorViewModel: ElevatorCalculatorViewModel = viewModel()
 
     // 从 ViewModel 收集当前电梯的 UI 状态
     val uiState by calculatorViewModel.currentElevatorUiState.collectAsStateWithLifecycle()

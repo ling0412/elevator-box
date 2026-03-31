@@ -69,7 +69,7 @@ object VersionMigrationHelper {
             // 注意：迁移应该按顺序执行，因为可能跨多个版本升级
             
             // v1.4.0 -> v1.5.0 迁移
-            if (fromVersionCode < 150 && toVersionCode >= 150) {
+            if (fromVersionCode < 10500 && toVersionCode >= 10500) {
                 Log.i(TAG, "执行 v1.4.0 -> v1.5.0 迁移")
                 migrateFromV1_4_0ToV1_5_0(context)
             }
@@ -137,7 +137,7 @@ object VersionMigrationHelper {
     
     /**
      * 解析版本号为数字代码
-     * 例如: "1.5.0" -> 150, "1.4.0" -> 140
+     * 例如: "1.5.0" -> 10500, "1.4.0" -> 10400, "1.10.2" -> 11002
      */
     private fun parseVersionCode(version: String): Int {
         return try {
@@ -146,7 +146,7 @@ object VersionMigrationHelper {
                 val major = parts[0].toIntOrNull() ?: 0
                 val minor = parts[1].toIntOrNull() ?: 0
                 val patch = parts.getOrNull(2)?.toIntOrNull() ?: 0
-                major * 100 + minor * 10 + patch
+                major * 10000 + minor * 100 + patch
             } else {
                 0
             }
