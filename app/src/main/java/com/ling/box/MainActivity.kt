@@ -37,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -127,20 +128,19 @@ fun MainAppScreen(
         }
     }
 
+    // rememberUpdatedState 保证 screens 列表中的 lambda 调用时始终使用最新的 callback，
+    // 而 screens 列表本身只创建一次，避免不必要的重组。
+    val currentOnStartScreenSelected by rememberUpdatedState(onStartScreenSelectedCallback)
+
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
-    // 图标列表
     val icons = getDynamicIcons()
 
-    // 屏幕列表
     val screens: List<@Composable (PaddingValues) -> Unit> = remember {
         listOf(
-            // 0: 磅梯页面
             { padding -> CalculatorScreen(padding) },
-            // 1: 计算页面
             { padding -> CalculateContainerScreen(padding) },
-            // 2: 设置页面
-            { padding -> ShowPage(onStartScreenSelected = onStartScreenSelectedCallback, paddingValues = padding) }
+            { padding -> ShowPage(onStartScreenSelected = { currentOnStartScreenSelected(it) }, paddingValues = padding) }
         )
     }
 
