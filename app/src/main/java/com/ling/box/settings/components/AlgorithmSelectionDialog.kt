@@ -20,7 +20,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ling.box.R
 import com.ling.box.calculator.model.BalanceCoefficientAlgorithm
 
 @Composable
@@ -32,13 +34,13 @@ fun AlgorithmSelectionDialog(
     var selectedAlgorithm by remember(currentAlgorithm) { mutableStateOf(currentAlgorithm) }
 
     val algorithmOptions = listOf(
-        BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION to "两点直线交点法",
-        BalanceCoefficientAlgorithm.LINEAR_REGRESSION to "线性拟合算法"
+        BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION to stringResource(R.string.algorithm_two_point),
+        BalanceCoefficientAlgorithm.LINEAR_REGRESSION to stringResource(R.string.algorithm_linear_regression)
     )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("选择平衡系数计算算法") },
+        title = { Text(stringResource(R.string.title_select_algorithm)) },
         text = {
             Column {
                 algorithmOptions.forEach { (algorithm, name) ->
@@ -62,9 +64,9 @@ fun AlgorithmSelectionDialog(
                             Text(
                                 text = when (algorithm) {
                                     BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION -> 
-                                        "直线计算选择实际交点，若无实际交点则虚拟延长线"
+                                        stringResource(R.string.algorithm_two_point_desc)
                                     BalanceCoefficientAlgorithm.LINEAR_REGRESSION -> 
-                                        "拟合所有数据点，加权平均。\n⚠️ 实验功能"
+                                        stringResource(R.string.algorithm_linear_desc)
                                 },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -76,12 +78,12 @@ fun AlgorithmSelectionDialog(
         },
         confirmButton = {
             Button(onClick = { onConfirm(selectedAlgorithm) }) {
-                Text("确定")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

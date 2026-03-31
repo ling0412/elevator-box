@@ -18,8 +18,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ling.box.R
 import com.ling.box.calculator.repository.ElevatorRepository
 
 @Composable
@@ -39,7 +41,7 @@ fun BalanceRangeSettingsDialog(
         onDismissRequest = onDismiss,
         title = { 
             Text(
-                text = "平衡系数范围设置",
+                text = stringResource(R.string.title_balance_range_settings),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -52,7 +54,7 @@ fun BalanceRangeSettingsDialog(
             ) {
                 // 最小合格范围滑块
                 Text(
-                    text = "最小合格范围: ${String.format("%.1f", minValue)}%",
+                    text = stringResource(R.string.label_min_range, String.format("%.1f", minValue)),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
                 )
@@ -76,7 +78,7 @@ fun BalanceRangeSettingsDialog(
                 
                 // 最大合格范围滑块
                 Text(
-                    text = "最大合格范围: ${String.format("%.1f", maxValue)}%",
+                    text = stringResource(R.string.label_max_range, String.format("%.1f", maxValue)),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
                 )
@@ -100,7 +102,7 @@ fun BalanceRangeSettingsDialog(
                 
                 // 最佳平衡点滑块
                 Text(
-                    text = "最佳平衡点: ${String.format("%.1f", idealValue)}%",
+                    text = stringResource(R.string.label_ideal_point, String.format("%.1f", idealValue)),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
@@ -117,7 +119,7 @@ fun BalanceRangeSettingsDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 Text(
-                    text = "合格范围: ${String.format("%.1f", minValue)}% - ${String.format("%.1f", maxValue)}%\n最佳平衡点: ${String.format("%.1f", idealValue)}%",
+                    text = stringResource(R.string.summary_range, String.format("%.1f", minValue), String.format("%.1f", maxValue), String.format("%.1f", idealValue)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -133,18 +135,18 @@ fun BalanceRangeSettingsDialog(
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("恢复默认值")
+                    Text(stringResource(R.string.restore_defaults))
                 }
             }
         },
         confirmButton = {
             Button(onClick = { onConfirm(minValue, maxValue, idealValue) }) {
-                Text("确定")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

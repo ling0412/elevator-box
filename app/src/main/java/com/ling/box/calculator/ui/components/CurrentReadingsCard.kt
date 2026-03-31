@@ -44,7 +44,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ling.box.R
 import com.ling.box.calculator.model.ElevatorUiState
 
 @Composable
@@ -78,7 +80,7 @@ fun CurrentReadingsCard(
                 .padding(horizontal = 14.dp, vertical = 16.dp)
         ) {
             Text(
-                "上下行电流 (A)",
+                stringResource(R.string.label_upward_downward_current),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 14.dp)
@@ -150,7 +152,7 @@ private fun CurrentReadingColumn(
             colors = textFieldColors,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
             singleLine = true,
-            label = { Text("块${index + 1}", style = MaterialTheme.typography.labelSmall) }
+            label = { Text(stringResource(R.string.label_block_index, index + 1), style = MaterialTheme.typography.labelSmall) }
         )
 
         OutlinedTextField(
@@ -161,7 +163,7 @@ private fun CurrentReadingColumn(
             colors = textFieldColors,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
             singleLine = true,
-            label = { Text("上行", style = MaterialTheme.typography.labelSmall) }
+            label = { Text(stringResource(R.string.label_upward), style = MaterialTheme.typography.labelSmall) }
         )
 
         OutlinedTextField(
@@ -172,14 +174,14 @@ private fun CurrentReadingColumn(
             colors = textFieldColors,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             singleLine = true,
-            label = { Text("下行", style = MaterialTheme.typography.labelSmall) }
+            label = { Text(stringResource(R.string.label_downward), style = MaterialTheme.typography.labelSmall) }
         )
 
         if (showDelete) {
             IconButton(onClick = onRemove, modifier = Modifier.size(48.dp)) {
                 Icon(
                     imageVector = Icons.Filled.Remove,
-                    contentDescription = "删除当前列",
+                    contentDescription = stringResource(R.string.content_desc_delete_column),
                     tint = MaterialTheme.colorScheme.error
                 )
             }
@@ -220,7 +222,7 @@ private fun ActionButtons(
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text("添加", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium))
+            Text(stringResource(R.string.add), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium))
         }
 
         var isClearPressed by remember { mutableStateOf(false) }
@@ -243,7 +245,7 @@ private fun ActionButtons(
             border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
         ) {
-            Text("清空", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium))
+            Text(stringResource(R.string.clear), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium))
         }
     }
 }

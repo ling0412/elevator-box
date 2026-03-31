@@ -15,7 +15,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ling.box.R
 import com.ling.box.calculator.model.BalanceCoefficientAlgorithm
 
 @Composable
@@ -40,8 +42,8 @@ fun SettingsCard(
         Column(modifier = Modifier.padding(vertical = 4.dp)) {
             SettingItem(
                 icon = Icons.AutoMirrored.Filled.Login,
-                title = "设置启动界面",
-                subtitle = "当前: ${screenTitles.getOrElse(currentStartScreenIndex) { screenTitles[0] }}",
+                title = stringResource(R.string.setting_start_screen),
+                subtitle = stringResource(R.string.setting_current_format, screenTitles.getOrElse(currentStartScreenIndex) { screenTitles[0] }),
                 onClick = onStartScreenClick
             )
 
@@ -52,10 +54,10 @@ fun SettingsCard(
 
             SettingItem(
                 icon = Icons.Default.Science,
-                title = "平衡系数算法",
+                title = stringResource(R.string.setting_algorithm),
                 subtitle = when (currentAlgorithm) {
-                    BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION -> "当前: 两点直线交点法"
-                    BalanceCoefficientAlgorithm.LINEAR_REGRESSION -> "当前: 线性拟合算法"
+                    BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION -> stringResource(R.string.setting_current_format, stringResource(R.string.algorithm_two_point))
+                    BalanceCoefficientAlgorithm.LINEAR_REGRESSION -> stringResource(R.string.setting_current_format, stringResource(R.string.algorithm_linear_regression))
                 },
                 onClick = onAlgorithmClick
             )
@@ -67,7 +69,7 @@ fun SettingsCard(
 
             SettingItem(
                 icon = Icons.Default.Tune,
-                title = "平衡系数范围",
+                title = stringResource(R.string.setting_balance_range),
                 subtitle = balanceRangeSubtitle,
                 onClick = onBalanceRangeClick
             )
@@ -79,8 +81,8 @@ fun SettingsCard(
 
             SettingItem(
                 icon = Icons.Default.Storage,
-                title = "数据管理",
-                subtitle = "导入或导出数据",
+                title = stringResource(R.string.setting_data_management),
+                subtitle = stringResource(R.string.setting_data_management_subtitle),
                 onClick = onExportImportClick
             )
         }

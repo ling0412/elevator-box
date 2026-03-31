@@ -37,7 +37,9 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ling.box.R
 import com.ling.box.calculator.model.calculateActualLoad
 import com.ling.box.calculator.model.calculateActualPercentage
 import com.ling.box.calculator.model.calculateNumberOfBlocks
@@ -62,7 +64,7 @@ fun StandardPercentageReference(
         .padding(vertical = 8.dp)
     ) {
         Text(
-            text = "标准百分比参考",
+            text = stringResource(R.string.title_standard_percentage),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             modifier = Modifier.padding(bottom = 8.dp)
@@ -87,7 +89,7 @@ fun StandardPercentageReference(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "请先输入额定载重和砝码重量",
+                            text = stringResource(R.string.hint_enter_load_and_weight),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
@@ -172,7 +174,7 @@ fun StandardPercentageReference(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "${blocks}块",
+                                text = stringResource(R.string.block_count_format, blocks),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
                             )

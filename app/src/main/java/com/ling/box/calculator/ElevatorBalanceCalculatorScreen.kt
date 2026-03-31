@@ -50,9 +50,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ling.box.R
 import com.ling.box.calculator.model.ElevatorUiState
 import com.ling.box.calculator.repository.ElevatorRepository
 import com.ling.box.calculator.ui.components.BalanceCoefficientDisplay
@@ -166,7 +168,7 @@ fun ElevatorBalanceCalculatorScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TopAppBar(
-                title = { Text("平衡系数计算", style = MaterialTheme.typography.titleLarge) },
+                title = { Text(stringResource(R.string.title_balance_calculation), style = MaterialTheme.typography.titleLarge) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                 windowInsets = TopAppBarDefaults.windowInsets,
                 modifier = Modifier.fillMaxWidth()
@@ -244,7 +246,7 @@ fun ElevatorBalanceCalculatorScreen(
                     OutlinedTextField(
                         value = uiState.manualBalanceCoefficientK ?: "",
                         onValueChange = { onManualKChange(it.ifEmpty { null }) },
-                        label = { Text("平衡系数 (%)") },
+                        label = { Text(stringResource(R.string.label_balance_coefficient_percent)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                         singleLine = true,
@@ -278,15 +280,15 @@ fun ElevatorBalanceCalculatorScreen(
             if (showClearDataDialog) {
                 AlertDialog(
                     onDismissRequest = { showClearDataDialog = false },
-                    title = { Text("确认清空？") },
-                    text = { Text("您确定要清空所有此电梯已输入的电流数据吗？") },
+                    title = { Text(stringResource(R.string.dialog_confirm_clear_title)) },
+                    text = { Text(stringResource(R.string.dialog_confirm_clear_message)) },
                     confirmButton = {
                         TextButton(onClick = { onClearData(); showClearDataDialog = false }) {
-                            Text("清空")
+                            Text(stringResource(R.string.clear))
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showClearDataDialog = false }) { Text("取消") }
+                        TextButton(onClick = { showClearDataDialog = false }) { Text(stringResource(R.string.cancel)) }
                     }
                 )
             }
@@ -303,7 +305,7 @@ fun ElevatorBalanceCalculatorScreen(
             uiState.balanceCoefficient?.let { totalPercent ->
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "单对重百分比 = %.2f %%".format(totalPercent),
+                    text = stringResource(R.string.label_single_balance_percent, totalPercent),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -311,7 +313,7 @@ fun ElevatorBalanceCalculatorScreen(
 
             if (currentMode != CalculatorMode.MANUAL_K) {
                 Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-                    Text("实时曲线图", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.title_realtime_chart), style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
                     CurrentChart(
                         upwardCurrentPoints = uiState.upwardCurrentPoints,
@@ -327,7 +329,7 @@ fun ElevatorBalanceCalculatorScreen(
 
             if (currentMode != CalculatorMode.MANUAL_K) {
                 Text(
-                    "预计砝码块数与实际载荷",
+                    stringResource(R.string.title_estimated_blocks),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                 )

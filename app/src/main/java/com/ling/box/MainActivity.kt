@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ling.box.R
 import com.ling.box.calculator.CalculatorScreen
 import com.ling.box.navigation.components.BottomNavigationBar
 import com.ling.box.navigation.components.NavigationRailBar
@@ -111,25 +112,22 @@ fun MainAppScreen(
     // 获取 SharedPreferences 实例
     val sharedPreferences = remember { context.getSharedPreferences("app_settings", Context.MODE_PRIVATE) }
 
+    // 底部导航栏标题
+    val bottomNavTitles = getDynamicBottomNavTitles()
+
     val onStartScreenSelectedCallback = { index: Int ->
-        val bottomNavTitles = getDynamicBottomNavTitles()
         if (index >= 0 && index < bottomNavTitles.size) {
-            // 将选中的索引保存到 SharedPreferences
             sharedPreferences.edit {
                 putInt("start_screen_index", index)
             }
-            // 显示保存成功的提示
-            Toast.makeText(context, "启动页面已设置为: ${bottomNavTitles[index]}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.toast_start_screen_set, bottomNavTitles[index]), Toast.LENGTH_SHORT).show()
             selectedTabIndex = index
         } else {
-            Toast.makeText(context, "启动页面索引无效", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.toast_start_screen_invalid), Toast.LENGTH_SHORT).show()
         }
     }
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-
-    // 底部导航栏标题
-    val bottomNavTitles = getDynamicBottomNavTitles()
 
     // 图标列表
     val icons = getDynamicIcons()

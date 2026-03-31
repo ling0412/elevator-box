@@ -19,7 +19,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ling.box.R
 import com.ling.box.update.utils.getAppVersionName
 
 @Composable
@@ -49,8 +51,8 @@ fun AppInfoCard(
 
             SettingItem(
                 icon = Icons.Filled.Update,
-                title = "检查更新",
-                subtitle = if (isCheckingForUpdate) "正在检查..." else "当前版本 v${getAppVersionName(context)}",
+                title = stringResource(R.string.check_update),
+                subtitle = if (isCheckingForUpdate) stringResource(R.string.checking_update) else stringResource(R.string.current_version_format, getAppVersionName(context)),
                 onClick = onCheckUpdateClick,
                 trailingContent = {
                     if (isCheckingForUpdate) {
@@ -72,8 +74,8 @@ fun AppInfoCard(
 
             SettingItem(
                 icon = Icons.Filled.Code,
-                title = "源代码",
-                subtitle = "查看项目源代码",
+                title = stringResource(R.string.source_code),
+                subtitle = stringResource(R.string.source_code_subtitle),
                 onClick = onSourceCodeClick
             )
 
@@ -84,8 +86,8 @@ fun AppInfoCard(
 
             SettingItem(
                 icon = Icons.Filled.Description,
-                title = "开源许可",
-                subtitle = "查看应用使用的开源库许可证",
+                title = stringResource(R.string.open_source_license),
+                subtitle = stringResource(R.string.open_source_license_subtitle),
                 onClick = onLicenseClick
             )
         }

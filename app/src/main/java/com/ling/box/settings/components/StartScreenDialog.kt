@@ -21,7 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ling.box.R
 
 @Composable
 fun StartScreenDialog(
@@ -34,7 +36,7 @@ fun StartScreenDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("选择启动界面") },
+        title = { Text(stringResource(R.string.title_select_start_screen)) },
         text = {
             Column {
                 screenTitles.forEachIndexed { index, title ->
@@ -57,12 +59,12 @@ fun StartScreenDialog(
         },
         confirmButton = {
             Button(onClick = { onConfirm(selectedIndex) }) {
-                Text("确定")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

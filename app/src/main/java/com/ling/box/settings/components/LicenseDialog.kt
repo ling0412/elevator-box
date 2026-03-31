@@ -23,9 +23,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
+import com.ling.box.R
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +63,7 @@ fun LicenseDialog(
                             contentAlignment = Alignment.CenterStart
                         ) {
                             Text(
-                                text = "开源许可证",
+                                text = stringResource(R.string.title_open_source_license),
                                 style = MaterialTheme.typography.headlineSmall,
                                 color = colorScheme.onPrimaryContainer
                             )
@@ -80,10 +82,10 @@ fun LicenseDialog(
                                         context.startActivity(intent)
                                     } catch (e: Exception) {
                                         Log.e("LicenseDialog", "无法打开项目链接: $e")
-                                        Toast.makeText(context, "无法打开项目链接", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.toast_cannot_open_link), Toast.LENGTH_SHORT).show()
                                     }
                                 } else {
-                                    Toast.makeText(context, "该库没有提供项目链接", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.toast_no_link), Toast.LENGTH_SHORT).show()
                                 }
                                 true
                             }
@@ -101,7 +103,7 @@ fun LicenseDialog(
                                     contentColor = colorScheme.primary
                                 )
                             ) {
-                                Text("关闭")
+                                Text(stringResource(R.string.close))
                             }
                         }
                     }

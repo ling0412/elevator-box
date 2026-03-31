@@ -26,7 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ling.box.R
 
 private enum class DataStatus {
     NOT_INPUT,
@@ -85,7 +87,7 @@ fun BalanceCoefficientDisplay(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "平衡系数 ${if (useManualBalance) "(手动输入)" else "(电流法)"}",
+            text = if (useManualBalance) stringResource(R.string.balance_coefficient_manual_label) else stringResource(R.string.balance_coefficient_current_label),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
         )
@@ -103,8 +105,8 @@ fun BalanceCoefficientDisplay(
                 DataStatus.NOT_INPUT -> {
                     Text(
                         text = when {
-                            useManualBalance -> "请输入平衡系数"
-                            else -> "数据不足或结果异常"
+                            useManualBalance -> stringResource(R.string.hint_enter_balance_coefficient)
+                            else -> stringResource(R.string.hint_insufficient_data)
                         },
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(vertical = 8.dp),
@@ -120,7 +122,7 @@ fun BalanceCoefficientDisplay(
                             color = color
                         )
                         Text(
-                            text = "精度存疑 (延长线计算)",
+                            text = stringResource(R.string.status_accuracy_warning),
                             style = MaterialTheme.typography.labelSmall,
                             color = color,
                             modifier = Modifier.padding(top = 2.dp)
@@ -129,9 +131,11 @@ fun BalanceCoefficientDisplay(
                 }
                 DataStatus.NORMAL -> {
                     val value = displayValue ?: 0.0
+                    val idealRangeText = stringResource(R.string.status_ideal_range)
+                    val outOfRangeText = stringResource(R.string.status_out_of_range)
                     val (color, statusText) = when {
-                        value > balanceRangeMin && value < balanceRangeMax -> Pair(MaterialTheme.colorScheme.primary, "理想范围")
-                        else -> Pair(MaterialTheme.colorScheme.error, "超出范围")
+                        value > balanceRangeMin && value < balanceRangeMax -> Pair(MaterialTheme.colorScheme.primary, idealRangeText)
+                        else -> Pair(MaterialTheme.colorScheme.error, outOfRangeText)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(

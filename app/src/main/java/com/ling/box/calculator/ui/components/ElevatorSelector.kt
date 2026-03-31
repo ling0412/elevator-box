@@ -53,8 +53,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ling.box.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ling.box.calculator.viewmodel.ElevatorCalculatorViewModel
 import java.time.LocalDate
@@ -244,7 +246,7 @@ fun ElevatorSelector(
                     contentColor = buttonContentColor
                 )
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "添加电梯", modifier = Modifier.size(24.dp))
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.content_desc_add_elevator), modifier = Modifier.size(24.dp))
             }
             
             if (allElevatorList.size > 1) {
@@ -258,7 +260,7 @@ fun ElevatorSelector(
                         contentColor = buttonContentColor
                     )
                 ) {
-                    Icon(Icons.Filled.Remove, contentDescription = "删除电梯", modifier = Modifier.size(24.dp))
+                    Icon(Icons.Filled.Remove, contentDescription = stringResource(R.string.content_desc_delete_elevator), modifier = Modifier.size(24.dp))
                 }
             }
         }
@@ -273,19 +275,19 @@ fun ElevatorSelector(
                 contentColor = buttonContentColor
             )
         ) {
-            Icon(Icons.AutoMirrored.Filled.List, contentDescription = "载入/管理电梯", modifier = Modifier.size(24.dp))
+            Icon(Icons.AutoMirrored.Filled.List, contentDescription = stringResource(R.string.content_desc_load_manage), modifier = Modifier.size(24.dp))
         }
     }
 
     if (showRenameDialog) {
         AlertDialog(
             onDismissRequest = { showRenameDialog = false },
-            title = { Text("重命名电梯") },
+            title = { Text(stringResource(R.string.dialog_rename_title)) },
             text = {
                 TextField(
                     value = newElevatorNameInput,
                     onValueChange = { newElevatorNameInput = it },
-                    label = { Text("新名称") },
+                    label = { Text(stringResource(R.string.label_new_name)) },
                     singleLine = true
                 )
             },
@@ -298,14 +300,14 @@ fun ElevatorSelector(
                         showRenameDialog = false
                     }
                 ) {
-                    Text("确认")
+                    Text(stringResource(R.string.confirm))
                 }
             },
             dismissButton = {
                 Button(
                     onClick = { showRenameDialog = false }
                 ) {
-                    Text("取消")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )

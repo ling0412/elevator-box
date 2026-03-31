@@ -12,8 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import com.ling.box.R
 import com.ling.box.update.config.UpdateConfig
 import com.ling.box.update.data.UpdateInfo
 import com.ling.box.update.utils.getAppVersionName
@@ -27,15 +29,15 @@ fun UpdateDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("发现新版本") },
+        title = { Text(stringResource(R.string.update_new_version_found)) },
         text = {
             Column {
-                Text("新版本: ${updateInfo.latestVersion}")
+                Text(stringResource(R.string.update_new_version_label, updateInfo.latestVersion))
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("当前版本: ${getAppVersionName(context)}")
+                Text(stringResource(R.string.update_current_version_label, getAppVersionName(context)))
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("更新说明:")
-                Text(updateInfo.releaseNotes ?: "无")
+                Text(stringResource(R.string.update_release_notes))
+                Text(updateInfo.releaseNotes ?: stringResource(R.string.none))
             }
         },
         confirmButton = {
@@ -44,16 +46,16 @@ fun UpdateDialog(
                 try {
                     context.startActivity(intent)
                 } catch (_: Exception) {
-                    Toast.makeText(context, "无法打开浏览器", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.toast_cannot_open_browser), Toast.LENGTH_SHORT).show()
                 }
                 onDismiss()
             }) {
-                Text("前往下载")
+                Text(stringResource(R.string.update_go_download))
             }
         },
         dismissButton = {
             Button(onClick = onDismiss) {
-                Text("稍后")
+                Text(stringResource(R.string.update_later))
             }
         }
     )

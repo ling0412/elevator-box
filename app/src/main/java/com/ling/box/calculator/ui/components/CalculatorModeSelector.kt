@@ -23,7 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
+import com.ling.box.R
 import com.ling.box.calculator.viewmodel.CalculatorMode
 
 @Composable
@@ -86,8 +88,8 @@ fun CalculatorModeSelector(
             ) {
                 Text(
                     text = when (mode) {
-                        CalculatorMode.CUSTOM_BLOCKS -> "自动"
-                        CalculatorMode.MANUAL_K -> "手动"
+                        CalculatorMode.CUSTOM_BLOCKS -> stringResource(R.string.mode_auto)
+                        CalculatorMode.MANUAL_K -> stringResource(R.string.mode_manual)
                     },
                     style = MaterialTheme.typography.bodySmall.copy(letterSpacing = 0.5.sp),
                     maxLines = 1

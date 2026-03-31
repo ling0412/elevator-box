@@ -30,12 +30,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ling.box.R
 import com.ling.box.calculator.model.BalanceCoefficientAlgorithm
 import com.ling.box.calculator.repository.ElevatorRepository
 import com.ling.box.settings.components.AlgorithmSelectionDialog
@@ -84,13 +86,18 @@ fun ShowPage(
     val balanceIdeal = remember { mutableStateOf<Float>(repository.getBalanceIdeal()) }
     
     // 生成设置项的副标题
-    val balanceRangeSubtitle = remember(balanceRangeMin.value, balanceRangeMax.value, balanceIdeal.value) {
-        "范围: ${String.format("%.1f", balanceRangeMin.value)}%-${String.format("%.1f", balanceRangeMax.value)}%, 最佳: ${String.format("%.1f", balanceIdeal.value)}%"
-    }
+    val balanceRangeSubtitle = stringResource(
+        R.string.balance_range_subtitle_format,
+        String.format("%.1f", balanceRangeMin.value),
+        String.format("%.1f", balanceRangeMax.value),
+        String.format("%.1f", balanceIdeal.value)
+    )
 
-    val screenTitles = remember {
-        listOf("磅梯", "计算", "设置")
-    }
+    val screenTitles = listOf(
+        stringResource(R.string.nav_balance),
+        stringResource(R.string.nav_calculator),
+        stringResource(R.string.nav_settings)
+    )
     val coroutineScope = rememberCoroutineScope()
 
     // 导出/导入相关状态
@@ -110,9 +117,9 @@ fun ShowPage(
                 withContext(Dispatchers.Main) {
                     isImporting = false
                     if (success) {
-                        Toast.makeText(context, "数据导入成功！请重启应用以查看导入的数据。", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, context.getString(R.string.toast_import_success), Toast.LENGTH_LONG).show()
                     } else {
-                        Toast.makeText(context, "数据导入失败，请检查文件格式是否正确。", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, context.getString(R.string.toast_import_failure), Toast.LENGTH_LONG).show()
                     }
                 }
             }
@@ -132,9 +139,9 @@ fun ShowPage(
                 withContext(Dispatchers.Main) {
                     isExporting = false
                     if (success) {
-                        Toast.makeText(context, "数据导出成功！", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.toast_export_success), Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(context, "数据导出失败，请重试。", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.toast_export_failure), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -175,7 +182,7 @@ fun ShowPage(
         TopAppBar(
             title = {
                 Text(
-                    "电梯工具箱",
+                    stringResource(R.string.app_name),
                     style = MaterialTheme.typography.titleLarge
                 )
             },
@@ -200,14 +207,14 @@ fun ShowPage(
                         .padding(bottom = 16.dp)
                 ) {
                     Text(
-                        text = "我们度过的每个平凡的日常，其实是接连不断发生的奇迹。",
+                        text = stringResource(R.string.quote_text),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     // 版权信息移到文字下方
                     Text(
-                        text = "版权所有 © 2025 ling",
+                        text = stringResource(R.string.copyright_text),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Normal,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -225,7 +232,7 @@ fun ShowPage(
                     try {
                         context.startActivity(intent)
                     } catch (e: Exception) {
-                        Toast.makeText(context, "无法打开浏览器", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.toast_cannot_open_browser), Toast.LENGTH_SHORT).show()
                     }
                 }
             )
@@ -261,14 +268,14 @@ fun ShowPage(
                 if (!isExporting) {
                     handleExport()
                 } else {
-                    Toast.makeText(context, "正在导出中，请稍候...", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.toast_exporting), Toast.LENGTH_SHORT).show()
                 }
             },
             onImportClick = {
                 if (!isImporting) {
                     handleImport()
                 } else {
-                    Toast.makeText(context, "正在导入中，请稍候...", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.toast_importing), Toast.LENGTH_SHORT).show()
                 }
             },
             onDismiss = { showExportImportDialog = false }
@@ -299,10 +306,11 @@ fun ShowPage(
                 }
                 currentAlgorithm.value = algorithm
                 showAlgorithmDialog.value = false
-                Toast.makeText(context, "算法已切换为: ${when (algorithm) {
-                    BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION -> "两点直线交点法"
-                    BalanceCoefficientAlgorithm.LINEAR_REGRESSION -> "线性拟合算法"
-                }}", Toast.LENGTH_SHORT).show()
+                val algorithmName = when (algorithm) {
+                    BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION -> context.getString(R.string.algorithm_two_point)
+                    BalanceCoefficientAlgorithm.LINEAR_REGRESSION -> context.getString(R.string.algorithm_linear_regression)
+                }
+                Toast.makeText(context, context.getString(R.string.toast_algorithm_switched, algorithmName), Toast.LENGTH_SHORT).show()
             },
             onDismiss = { showAlgorithmDialog.value = false }
         )
@@ -326,7 +334,7 @@ fun ShowPage(
                 balanceRangeMax.value = max
                 balanceIdeal.value = ideal
                 showBalanceRangeDialog.value = false
-                Toast.makeText(context, "平衡系数范围设置已保存", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.toast_balance_range_saved), Toast.LENGTH_SHORT).show()
             },
             onDismiss = { showBalanceRangeDialog.value = false }
         )

@@ -38,8 +38,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ling.box.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ling.box.calculator.viewmodel.ElevatorCalculatorViewModel
 
@@ -139,10 +141,10 @@ fun LoadElevatorDialog(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("载入/管理电梯")
+                Text(stringResource(R.string.title_load_manage_elevator))
                 if (isMultiSelectMode) {
                     TextButton(onClick = { isMultiSelectMode = false; selectedIndices = emptySet() }) {
-                        Text("取消")
+                        Text(stringResource(R.string.cancel))
                     }
                 }
             }
@@ -157,8 +159,8 @@ fun LoadElevatorDialog(
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        label = { Text("搜索") },
-                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "搜索", modifier = Modifier.size(18.dp)) },
+                        label = { Text(stringResource(R.string.search)) },
+                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.search), modifier = Modifier.size(18.dp)) },
                         singleLine = true,
                         modifier = Modifier
                             .weight(1f)
@@ -172,7 +174,7 @@ fun LoadElevatorDialog(
                             modifier = Modifier.height(48.dp)
                         ) {
                             Text(
-                                if (isMultiSelectMode) "取消" else "批量删除",
+                                if (isMultiSelectMode) stringResource(R.string.cancel) else stringResource(R.string.label_batch_delete),
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
@@ -196,7 +198,7 @@ fun LoadElevatorDialog(
                                 onCheckedChange = { toggleSelectAll() }
                             )
                             Text(
-                                text = if (allSelected) "取消全选" else "全选",
+                                text = if (allSelected) stringResource(R.string.label_deselect_all) else stringResource(R.string.label_select_all),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -211,7 +213,7 @@ fun LoadElevatorDialog(
                             ) {
                                 Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("删除 (${selectedIndices.size})")
+                                Text(stringResource(R.string.delete_count_format, selectedIndices.size))
                             }
                         }
                     }
@@ -269,7 +271,7 @@ fun LoadElevatorDialog(
                                             overflow = TextOverflow.Ellipsis
                                         )
                                         Text(
-                                            text = "创建日期: ${elevatorUnitState.creationDate}",
+                                            text = stringResource(R.string.label_creation_date, elevatorUnitState.creationDate),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -283,7 +285,7 @@ fun LoadElevatorDialog(
                                         },
                                         modifier = Modifier.size(36.dp)
                                     ) {
-                                        Icon(Icons.Filled.Delete, contentDescription = "删除电梯")
+                                        Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.content_desc_delete_elevator))
                                     }
                                 }
                             }
@@ -292,7 +294,7 @@ fun LoadElevatorDialog(
                     if (filteredElevatorList.isEmpty() && searchQuery.isNotBlank()) {
                         item {
                             Text(
-                                text = "未找到相关电梯",
+                                text = stringResource(R.string.empty_search_result),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp),
@@ -306,7 +308,7 @@ fun LoadElevatorDialog(
         },
         confirmButton = {
             Button(onClick = onDismiss) {
-                Text("关闭")
+                Text(stringResource(R.string.close))
             }
         }
     )
@@ -315,9 +317,9 @@ fun LoadElevatorDialog(
     if (showDeleteConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmDialog = false },
-            title = { Text("确认删除") },
+            title = { Text(stringResource(R.string.dialog_confirm_delete_title)) },
             text = { 
-                Text("确定要删除选中的 ${selectedIndices.size} 个电梯吗？此操作不可撤销。")
+                Text(stringResource(R.string.dialog_confirm_delete_message, selectedIndices.size))
             },
             confirmButton = {
                 Button(
@@ -327,12 +329,12 @@ fun LoadElevatorDialog(
                         contentColor = MaterialTheme.colorScheme.onError
                     )
                 ) {
-                    Text("删除")
+                    Text(stringResource(R.string.delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmDialog = false }) {
-                    Text("取消")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )

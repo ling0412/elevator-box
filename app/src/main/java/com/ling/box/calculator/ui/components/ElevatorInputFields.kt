@@ -36,8 +36,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ling.box.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +79,7 @@ fun ElevatorInputFields(
                     OutlinedTextField(
                         value = ratedLoad,
                         onValueChange = onRatedLoadChange,
-                        label = { Text("额定载重", style = MaterialTheme.typography.labelLarge) },
+                        label = { Text(stringResource(R.string.label_rated_load), style = MaterialTheme.typography.labelLarge) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                         singleLine = true,
@@ -138,7 +140,7 @@ fun ElevatorInputFields(
             OutlinedTextField(
                 value = counterweightBlockWeight,
                 onValueChange = onBlockWeightChange,
-                label = { Text("砝码重量", style = MaterialTheme.typography.labelLarge) },
+                label = { Text(stringResource(R.string.label_block_weight), style = MaterialTheme.typography.labelLarge) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                 singleLine = true,
@@ -170,7 +172,7 @@ fun ElevatorInputFields(
         OutlinedTextField(
             value = counterweightWeight,
             onValueChange = onCounterweightChange,
-            label = { Text("对重重量", style = MaterialTheme.typography.labelLarge) },
+            label = { Text(stringResource(R.string.label_counterweight), style = MaterialTheme.typography.labelLarge) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
             singleLine = true,

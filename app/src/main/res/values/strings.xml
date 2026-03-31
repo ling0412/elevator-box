@@ -1,3 +1,161 @@
 <resources>
     <string name="app_name">电梯工具箱</string>
+
+    <!-- 通用 -->
+    <string name="cancel">取消</string>
+    <string name="confirm">确定</string>
+    <string name="close">关闭</string>
+    <string name="delete">删除</string>
+    <string name="clear">清空</string>
+    <string name="add">添加</string>
+    <string name="save">保存</string>
+    <string name="search">搜索</string>
+    <string name="none">无</string>
+    <string name="toast_cannot_open_browser">无法打开浏览器</string>
+    <string name="unit_kg" translatable="false">kg</string>
+
+    <!-- 导航 -->
+    <string name="nav_balance">磅梯</string>
+    <string name="nav_calculator">计算</string>
+    <string name="nav_settings">设置</string>
+
+    <!-- 计算器主界面 -->
+    <string name="title_balance_calculation">平衡系数计算</string>
+    <string name="mode_auto">自动</string>
+    <string name="mode_manual">手动</string>
+    <string name="label_rated_load">额定载重</string>
+    <string name="label_block_weight">砝码重量</string>
+    <string name="label_counterweight">对重重量</string>
+    <string name="label_balance_coefficient_percent">平衡系数 (%)</string>
+    <string name="label_upward_downward_current">上下行电流 (A)</string>
+    <string name="label_block_index">块%d</string>
+    <string name="label_upward">上行</string>
+    <string name="label_downward">下行</string>
+    <string name="content_desc_delete_column">删除当前列</string>
+    <string name="dialog_confirm_clear_title">确认清空？</string>
+    <string name="dialog_confirm_clear_message">您确定要清空所有此电梯已输入的电流数据吗？</string>
+    <string name="label_single_balance_percent">单对重百分比 = %.2f %%</string>
+    <string name="title_realtime_chart">实时曲线图</string>
+    <string name="title_estimated_blocks">预计砝码块数与实际载荷</string>
+
+    <!-- 平衡系数显示 -->
+    <string name="balance_coefficient_manual_label">平衡系数 (手动输入)</string>
+    <string name="balance_coefficient_current_label">平衡系数 (电流法)</string>
+    <string name="hint_enter_balance_coefficient">请输入平衡系数</string>
+    <string name="hint_insufficient_data">数据不足或结果异常</string>
+    <string name="status_accuracy_warning">精度存疑 (延长线计算)</string>
+    <string name="status_ideal_range">理想范围</string>
+    <string name="status_out_of_range">超出范围</string>
+
+    <!-- 标准百分比参考 -->
+    <string name="title_standard_percentage">标准百分比参考</string>
+    <string name="hint_enter_load_and_weight">请先输入额定载重和砝码重量</string>
+    <string name="block_count_format">%d块</string>
+
+    <!-- 平衡警告区域 -->
+    <string name="feasible_options_count">可行方案 (%d 个)</string>
+    <string name="hint_expand_options">点击展开查看所有可行方案</string>
+    <string name="content_desc_recommended">推荐</string>
+    <string name="title_recommended_plan">推荐方案</string>
+    <string name="content_desc_warning">警告</string>
+    <string name="warning_out_of_range">当前平衡系数 %1$s%% 超出推荐范围 (%2$s%%-%3$s%%)</string>
+
+    <!-- 预计砝码表格 -->
+    <string name="table_header_param">参数</string>
+    <string name="table_row_actual_load">实际载荷(kg)</string>
+    <string name="table_row_block_count">砝码块数</string>
+    <string name="table_suffix_blocks">块</string>
+    <string name="table_row_actual_percentage">实际百分比</string>
+
+    <!-- 电梯选择器 -->
+    <string name="content_desc_add_elevator">添加电梯</string>
+    <string name="content_desc_delete_elevator">删除电梯</string>
+    <string name="content_desc_load_manage">载入/管理电梯</string>
+    <string name="dialog_rename_title">重命名电梯</string>
+    <string name="label_new_name">新名称</string>
+    <string name="elevator_default_name_regex" translatable="false">电梯 \\d+</string>
+    <string name="elevator_name_prefix">电梯 </string>
+
+    <!-- 载入/管理电梯对话框 -->
+    <string name="title_load_manage_elevator">载入/管理电梯</string>
+    <string name="label_batch_delete">批量删除</string>
+    <string name="label_select_all">全选</string>
+    <string name="label_deselect_all">取消全选</string>
+    <string name="delete_count_format">删除 (%d)</string>
+    <string name="label_creation_date">创建日期: %s</string>
+    <string name="empty_search_result">未找到相关电梯</string>
+    <string name="dialog_confirm_delete_title">确认删除</string>
+    <string name="dialog_confirm_delete_message">确定要删除选中的 %d 个电梯吗？此操作不可撤销。</string>
+
+    <!-- 设置页面 -->
+    <string name="quote_text">我们度过的每个平凡的日常，其实是接连不断发生的奇迹。</string>
+    <string name="copyright_text">版权所有 © 2025 ling</string>
+    <string name="setting_start_screen">设置启动界面</string>
+    <string name="setting_current_format">当前: %s</string>
+    <string name="setting_algorithm">平衡系数算法</string>
+    <string name="algorithm_two_point">两点直线交点法</string>
+    <string name="algorithm_linear_regression">线性拟合算法</string>
+    <string name="setting_balance_range">平衡系数范围</string>
+    <string name="setting_data_management">数据管理</string>
+    <string name="setting_data_management_subtitle">导入或导出数据</string>
+    <string name="balance_range_subtitle_format">范围: %1$s%%-%2$s%%, 最佳: %3$s%%</string>
+    <string name="toast_start_screen_set">启动页面已设置为: %s</string>
+    <string name="toast_start_screen_invalid">启动页面索引无效</string>
+    <string name="toast_algorithm_switched">算法已切换为: %s</string>
+    <string name="toast_import_success">数据导入成功！请重启应用以查看导入的数据。</string>
+    <string name="toast_import_failure">数据导入失败，请检查文件格式是否正确。</string>
+    <string name="toast_export_success">数据导出成功！</string>
+    <string name="toast_export_failure">数据导出失败，请重试。</string>
+    <string name="toast_exporting">正在导出中，请稍候…</string>
+    <string name="toast_importing">正在导入中，请稍候…</string>
+    <string name="toast_balance_range_saved">平衡系数范围设置已保存</string>
+
+    <!-- 应用信息卡片 -->
+    <string name="check_update">检查更新</string>
+    <string name="checking_update">正在检查…</string>
+    <string name="current_version_format">当前版本 v%s</string>
+    <string name="source_code">源代码</string>
+    <string name="source_code_subtitle">查看项目源代码</string>
+    <string name="open_source_license">开源许可</string>
+    <string name="open_source_license_subtitle">查看应用使用的开源库许可证</string>
+    <string name="version_number">版本号</string>
+
+    <!-- 更新对话框 -->
+    <string name="update_new_version_found">发现新版本</string>
+    <string name="update_new_version_label">新版本: %s</string>
+    <string name="update_current_version_label">当前版本: %s</string>
+    <string name="update_release_notes">更新说明:</string>
+    <string name="update_go_download">前往下载</string>
+    <string name="update_later">稍后</string>
+
+    <!-- 开源许可对话框 -->
+    <string name="title_open_source_license">开源许可证</string>
+    <string name="toast_cannot_open_link">无法打开项目链接</string>
+    <string name="toast_no_link">该库没有提供项目链接</string>
+
+    <!-- 算法选择对话框 -->
+    <string name="title_select_algorithm">选择平衡系数计算算法</string>
+    <string name="algorithm_two_point_desc">直线计算选择实际交点，若无实际交点则虚拟延长线</string>
+    <string name="algorithm_linear_desc">拟合所有数据点，加权平均。\n⚠️ 实验功能</string>
+
+    <!-- 平衡系数范围对话框 -->
+    <string name="title_balance_range_settings">平衡系数范围设置</string>
+    <string name="label_min_range">最小合格范围: %s%%</string>
+    <string name="label_max_range">最大合格范围: %s%%</string>
+    <string name="label_ideal_point">最佳平衡点: %s%%</string>
+    <string name="summary_range">合格范围: %1$s%% - %2$s%%\n最佳平衡点: %3$s%%</string>
+    <string name="restore_defaults">恢复默认值</string>
+
+    <!-- 启动界面选择对话框 -->
+    <string name="title_select_start_screen">选择启动界面</string>
+
+    <!-- 导入导出对话框 -->
+    <string name="export_data">导出数据</string>
+    <string name="export_data_subtitle">导出磅梯数据和自检数据</string>
+    <string name="import_data">导入数据</string>
+    <string name="import_data_subtitle">从备份文件恢复数据</string>
+
+    <!-- 进制转换页面 -->
+    <string name="title_number_converter">进制转换工具</string>
+    <string name="title_safety_calculator">电梯自检参数计算</string>
 </resources>

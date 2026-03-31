@@ -17,8 +17,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ling.box.R
 
 @Composable
 fun VersionItem(
@@ -45,7 +47,7 @@ fun VersionItem(
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
-                    text = "版本号",
+                    text = stringResource(R.string.version_number),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     color = contentColor

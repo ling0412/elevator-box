@@ -20,8 +20,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ling.box.R
 
 @Composable
 fun ExportImportDialog(
@@ -31,7 +33,7 @@ fun ExportImportDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("数据管理") },
+        title = { Text(stringResource(R.string.setting_data_management)) },
         text = {
             Column {
                 Row(
@@ -54,13 +56,13 @@ fun ExportImportDialog(
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(
-                            text = "导出数据",
+                            text = stringResource(R.string.export_data),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "导出磅梯数据和自检数据",
+                            text = stringResource(R.string.export_data_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -87,13 +89,13 @@ fun ExportImportDialog(
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(
-                            text = "导入数据",
+                            text = stringResource(R.string.import_data),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "从备份文件恢复数据",
+                            text = stringResource(R.string.import_data_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -104,7 +106,7 @@ fun ExportImportDialog(
         confirmButton = {},
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

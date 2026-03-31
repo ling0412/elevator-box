@@ -4,10 +4,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddChart
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.ling.box.R
 
+@Composable
 fun getDynamicBottomNavTitles(): List<String> {
-    return listOf("磅梯", "计算", "设置")
+    return listOf(
+        stringResource(R.string.nav_balance),
+        stringResource(R.string.nav_calculator),
+        stringResource(R.string.nav_settings)
+    )
 }
 
 fun getDynamicIcons(): List<ImageVector> {

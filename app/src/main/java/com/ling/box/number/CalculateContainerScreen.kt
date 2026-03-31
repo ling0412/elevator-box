@@ -35,13 +35,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.annotation.StringRes
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
+import com.ling.box.R
 
 // 定义计算器类型的枚举，并关联索引
-enum class CalculatorType(val title: String, val icon: ImageVector, val index: Int) {
-    NUMBER_BASE("进制转换工具", Icons.Filled.SwapHoriz, 0),
-    SELF_CHECK("电梯自检参数计算", Icons.Filled.Build, 1)
+enum class CalculatorType(@StringRes val titleResId: Int, val icon: ImageVector, val index: Int) {
+    NUMBER_BASE(R.string.title_number_converter, Icons.Filled.SwapHoriz, 0),
+    SELF_CHECK(R.string.title_safety_calculator, Icons.Filled.Build, 1)
 
 }
 
@@ -77,7 +80,7 @@ fun CalculateContainerScreen(paddingValues: PaddingValues) {
             TopAppBar(
                 title = {
                     AnimatedContent(
-                        targetState = selectedCalculator.title,
+                        targetState = stringResource(selectedCalculator.titleResId),
                         transitionSpec = {
                             (fadeIn(animationSpec = tween(300)) +
                                     scaleIn(initialScale = 0.92f, animationSpec = tween(300))) togetherWith
@@ -125,8 +128,8 @@ fun CalculateContainerScreen(paddingValues: PaddingValues) {
                         Tab(
                             selected = selectedTabIndex == calculatorType.index,
                             onClick = { selectedTabIndex = calculatorType.index },
-                            text = { Text(calculatorType.title) },
-                            icon = { Icon(calculatorType.icon, contentDescription = calculatorType.title) }
+                            text = { Text(stringResource(calculatorType.titleResId)) },
+                            icon = { Icon(calculatorType.icon, contentDescription = stringResource(calculatorType.titleResId)) }
                         )
                     }
                 }
@@ -161,8 +164,8 @@ fun CalculateContainerScreen(paddingValues: PaddingValues) {
                         Tab(
                             selected = selectedTabIndex == calculatorType.index,
                             onClick = { selectedTabIndex = calculatorType.index },
-                            text = { Text(calculatorType.title) },
-                            icon = { Icon(calculatorType.icon, contentDescription = calculatorType.title) }
+                            text = { Text(stringResource(calculatorType.titleResId)) },
+                            icon = { Icon(calculatorType.icon, contentDescription = stringResource(calculatorType.titleResId)) }
                         )
                     }
                 }

@@ -33,8 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ling.box.R
 
 @Composable
 fun BalanceWarningSection(
@@ -88,7 +90,7 @@ fun BalanceWarningSection(
                                     .padding(bottom = 8.dp)
                             ) {
                                 Text(
-                                    text = "可行方案 ($feasibleOptionCount 个)",
+                                    text = stringResource(R.string.feasible_options_count, feasibleOptionCount),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -110,7 +112,7 @@ fun BalanceWarningSection(
                                     }
                                 } else if (feasibleOptionCount > 0) {
                                     Text(
-                                        text = "点击展开查看所有可行方案",
+                                        text = stringResource(R.string.hint_expand_options),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                         modifier = Modifier.padding(start = 16.dp, top = 4.dp)
@@ -125,10 +127,10 @@ fun BalanceWarningSection(
 
                 if (!recommendationPart.isNullOrBlank()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Star, contentDescription = "推荐", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Filled.Star, contentDescription = stringResource(R.string.content_desc_recommended), tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "推荐方案",
+                            text = stringResource(R.string.title_recommended_plan),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -177,12 +179,12 @@ fun BalanceWarningSection(
             ) {
                 Icon(
                     Icons.Filled.Warning,
-                    contentDescription = "警告",
+                    contentDescription = stringResource(R.string.content_desc_warning),
                     tint = MaterialTheme.colorScheme.error
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "当前平衡系数 ${"%.2f".format(coeff)}% 超出推荐范围 (${"%.1f".format(balanceRangeMin)}%-${"%.1f".format(balanceRangeMax)}%)",
+                    text = stringResource(R.string.warning_out_of_range, "%.2f".format(coeff), "%.1f".format(balanceRangeMin), "%.1f".format(balanceRangeMax)),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error
                 )
