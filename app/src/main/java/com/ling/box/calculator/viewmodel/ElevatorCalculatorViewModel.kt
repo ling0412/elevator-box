@@ -32,6 +32,14 @@ enum class CalculatorMode { CUSTOM_BLOCKS, MANUAL_K }
 
 class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(application) {
 
+    companion object {
+        private val UNSIGNED_DECIMAL_REGEX = Regex("[0-9]*\\.?[0-9]*")
+        private val SIGNED_DECIMAL_REGEX = Regex("^-?[0-9]*\\.?[0-9]*$")
+        private val INTEGER_REGEX = Regex("[0-9]*")
+        private val DEFAULT_NAME_REGEX = Regex("电梯 \\d+")
+        private val DEFAULT_NAME_CAPTURE_REGEX = Regex("电梯 (\\d+)")
+    }
+
     private val repository = ElevatorRepository(application)
     private val twoPointCalculator: BalanceCoefficientCalculator = TwoPointIntersectionCalculator()
     private val linearRegressionCalculator: BalanceCoefficientCalculator = LinearRegressionCalculator()
@@ -253,7 +261,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
 
     fun updateRatedLoad(value: String) {
         updateDataForCurrentElevator { data ->
-            if (value.matches(Regex("[0-9]*\\.?[0-9]*"))) {
+            if (value.matches(UNSIGNED_DECIMAL_REGEX)) {
                 data.ratedLoad = value
                 repository.saveState(getCurrentElevatorIndex(), data)
             }
@@ -263,7 +271,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
 
     fun updateCounterweightWeight(value: String) {
         updateDataForCurrentElevator { data ->
-            if (value.matches(Regex("[0-9]*\\.?[0-9]*"))) {
+            if (value.matches(UNSIGNED_DECIMAL_REGEX)) {
                 data.counterweightWeight = value
                 repository.saveState(getCurrentElevatorIndex(), data)
             }
@@ -273,7 +281,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
 
     fun updateCounterweightBlockWeight(value: String) {
         updateDataForCurrentElevator { data ->
-            if (value.matches(Regex("[0-9]*\\.?[0-9]*"))) {
+            if (value.matches(UNSIGNED_DECIMAL_REGEX)) {
                 data.counterweightBlockWeight = value
                 repository.saveState(getCurrentElevatorIndex(), data)
             }
@@ -282,15 +290,10 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
     }
 
     fun updateManualBalanceCoefficientK(value: String?) {
-        // 定义 K 值允许的物理范围：-50.0% 到 200.0%
         val minKThreshold = -50.0
         val maxKThreshold = 200.0
 
-        // 1. 正则表达式：允许可选负号、数字和小数点
-        val signedDecimalRegex = Regex("^-?[0-9]*\\.?[0-9]*$")
-
-        // 2. 过滤输入：确保只包含有效的数字字符
-        val filteredValue = value.takeIf { it?.matches(signedDecimalRegex) == true }
+        val filteredValue = value.takeIf { it?.matches(SIGNED_DECIMAL_REGEX) == true }
 
         // 3. 尝试解析为 Double
         val parsedK = filteredValue?.toDoubleOrNull()
@@ -355,7 +358,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
     }
 
     fun updateCustomBlockCount(index: Int, value: String) {
-        if (value.matches(Regex("[0-9]*"))) {
+        if (value.matches(INTEGER_REGEX)) {
             updateDataForCurrentElevator { data ->
                 // 确保列表大小足以容纳这个索引
                 ElevatorCalculationService.ensureListSize(data.customBlockCounts, index + 1, "")
@@ -400,8 +403,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
         if (!(directionIndex == 0 || directionIndex == 1)) return
 
         updateDataForCurrentElevator { data ->
-            if (value.matches(Regex("[0-9]*\\.?[0-9]*"))) {
-                // 确保列表大小足以容纳这个索引
+            if (value.matches(UNSIGNED_DECIMAL_REGEX)) {
                 ElevatorCalculationService.ensureListSize(data.customBlockCounts, pointIndex + 1, "") // 也确保块数列表足够大
                 ElevatorCalculationService.ensureListSize(data.customBlockPercentages, pointIndex + 1, null) // 百分比列表
                 ElevatorCalculationService.ensureListSize(data.currentReadings[directionIndex], pointIndex + 1, "")
@@ -426,16 +428,12 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
 
     // --- 私有辅助方法 ---
 
-    // --- 判断是否为默认电梯名称格式 ---
     private fun isDefaultElevatorName(name: String): Boolean {
-        // 使用正则表达式判断是否是 "电梯 数字" 的格式
-        return name.matches(Regex("电梯 \\d+"))
+        return name.matches(DEFAULT_NAME_REGEX)
     }
 
-    // --- 从电梯名称中提取数字 ---
     private fun getElevatorNumberFromName(name: String): Int? {
-        val matchResult = Regex("电梯 (\\d+)").find(name)
-        return matchResult?.groupValues?.getOrNull(1)?.toIntOrNull()
+        return DEFAULT_NAME_CAPTURE_REGEX.find(name)?.groupValues?.getOrNull(1)?.toIntOrNull()
     }
 
     private fun getCurrentData(): UnitState? {
