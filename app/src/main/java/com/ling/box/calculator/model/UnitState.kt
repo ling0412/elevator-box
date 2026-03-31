@@ -69,4 +69,34 @@ data class UnitState(
         }
         currentReadings.forEach { it.add("") }
     }
+
+    /**
+     * 创建真正独立的深拷贝，所有 SnapshotStateList 都会创建新实例。
+     * data class 的 copy() 只做浅拷贝，列表字段会共享引用，
+     * 导致修改副本时原对象也被同步修改，破坏原子更新语义。
+     */
+    fun deepCopy(): UnitState = UnitState(
+        name = name,
+        creationDate = creationDate,
+        ratedLoad = ratedLoad,
+        counterweightWeight = counterweightWeight,
+        counterweightBlockWeight = counterweightBlockWeight,
+        manualBalanceCoefficientK = manualBalanceCoefficientK,
+        useManualBalance = useManualBalance,
+        useCustomBlockInput = useCustomBlockInput,
+        customBlockCounts = mutableStateListOf<String>().also { it.addAll(customBlockCounts) },
+        customBlockPercentages = mutableStateListOf<Double?>().also { it.addAll(customBlockPercentages) },
+        currentReadings = mutableStateListOf<SnapshotStateList<String>>().also { outer ->
+            currentReadings.forEach { inner ->
+                outer.add(mutableStateListOf<String>().also { it.addAll(inner) })
+            }
+        },
+        balanceCoefficientK = balanceCoefficientK,
+        balanceCoefficient = balanceCoefficient,
+        recommendedBlocksMessage = recommendedBlocksMessage,
+        hasActualIntersection = hasActualIntersection,
+        linearRegressionR2 = linearRegressionR2,
+        upwardCurrentPoints = mutableStateListOf<Pair<Double, Float>>().also { it.addAll(upwardCurrentPoints) },
+        downwardCurrentPoints = mutableStateListOf<Pair<Double, Float>>().also { it.addAll(downwardCurrentPoints) },
+    )
 }

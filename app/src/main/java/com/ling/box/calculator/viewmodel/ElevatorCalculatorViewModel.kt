@@ -43,9 +43,8 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
     private val _currentElevatorIndex = MutableStateFlow(repository.getCurrentElevatorIndex())
     val currentElevatorIndex: StateFlow<Int> = _currentElevatorIndex.asStateFlow()
 
-    // 算法选择：从 Repository 读取，默认使用两点直线交点法
     private val _selectedAlgorithm = MutableStateFlow(
-        BalanceCoefficientAlgorithm.values().getOrNull(
+        BalanceCoefficientAlgorithm.entries.getOrNull(
             repository.getAlgorithmSelection(BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION.ordinal)
         ) ?: BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION
     )
@@ -450,9 +449,21 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
     private fun updateDataForCurrentElevator(updateAction: (UnitState) -> Unit) {
         val index = _currentElevatorIndex.value
         if (index in _unitStateList.indices) {
-            val currentDataCopy = _unitStateList[index].copy()
+            val currentDataCopy = _unitStateList[index].deepCopy()
             updateAction(currentDataCopy)
             _unitStateList[index] = currentDataCopy
+        }
+    }
+
+    /**
+     * 强制触发 snapshotFlow 对当前电梯状态的重新读取。
+     * triggerRecalculationOnly() 等方法直接修改 UnitState 的 var 字段（非快照可观察），
+     * 需要显式替换列表项来通知快照系统状态已变更。
+     */
+    private fun notifyCurrentElevatorChanged() {
+        val index = _currentElevatorIndex.value
+        if (index in _unitStateList.indices) {
+            _unitStateList[index] = _unitStateList[index]
         }
     }
 
@@ -465,13 +476,11 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
             data.downwardCurrentPoints.clear()
         } else {
             ElevatorCalculationService.updateCurrentPoints(data)
-            // 从 Repository 读取最新的算法选择
-            val algorithm = BalanceCoefficientAlgorithm.values().getOrNull(
+            val algorithm = BalanceCoefficientAlgorithm.entries.getOrNull(
                 repository.getAlgorithmSelection(BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION.ordinal)
             ) ?: BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION
             _selectedAlgorithm.value = algorithm
             
-            // 根据选择的算法计算平衡系数
             val calculator = when (algorithm) {
                 BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION -> twoPointCalculator
                 BalanceCoefficientAlgorithm.LINEAR_REGRESSION -> linearRegressionCalculator
@@ -491,6 +500,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
         } else {
             data.balanceCoefficient = null
         }
+        notifyCurrentElevatorChanged()
     }
 
     private fun calculateRecommendedBlocksForCurrent() {
@@ -502,7 +512,6 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
             data.balanceCoefficientK
         }
 
-        // 从 repository 读取平衡系数范围设置
         val targetKMin = repository.getBalanceRangeMin().toDouble()
         val targetKMax = repository.getBalanceRangeMax().toDouble()
         val idealK = repository.getBalanceIdeal().toDouble()
@@ -515,6 +524,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
             targetKMax = targetKMax,
             idealK = idealK
         )
+        notifyCurrentElevatorChanged()
     }
 
 
