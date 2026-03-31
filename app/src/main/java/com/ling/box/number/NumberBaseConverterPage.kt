@@ -1,5 +1,7 @@
 package com.ling.box.number
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -26,10 +28,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
@@ -49,21 +51,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import android.content.ClipData
-import android.content.ClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import java.math.BigInteger
-
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.math.BigInteger
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -147,7 +146,6 @@ fun NumberBaseConverterPage() {
                 if (conversionResults.isNotEmpty()) {
                     ConversionResultsSection(
                         results = conversionResults,
-                        inputText = inputText,
                         selectedBase = selectedBase,
                         onCopy = { value ->
                             val clip = ClipData.newPlainText("转换结果", value)
@@ -207,7 +205,6 @@ fun NumberBaseConverterPage() {
             if (conversionResults.isNotEmpty()) {
                 ConversionResultsSection(
                     results = conversionResults,
-                    inputText = inputText,
                     selectedBase = selectedBase,
                     onCopy = { value ->
                         val clip = ClipData.newPlainText("转换结果", value)
@@ -442,7 +439,6 @@ private fun BaseIndicator(
 @Composable
 private fun ConversionResultsSection(
     results: Map<String, String>,
-    inputText: String,
     selectedBase: Int?,
     onCopy: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -481,8 +477,6 @@ private fun ConversionResultsSection(
                     if (selectedBase == 16) {
                         FloorHeightTableAnalysis(
                             binaryValue = value,
-                            sourceBase = selectedBase,
-                            sourceInput = inputText,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 4.dp)
@@ -569,21 +563,15 @@ private fun BinaryBitAnalysis(
 @Composable
 private fun FloorHeightTableAnalysis(
     binaryValue: String,
-    sourceBase: Int?,
-    sourceInput: String,
     modifier: Modifier = Modifier
 ) {
-    // 根据源进制补齐前导零，确保十六进制 "7F7F" 解读为 16 层而非 15 层
-    val paddedBinary = remember(binaryValue, sourceBase, sourceInput) {
-        when (sourceBase) {
-            16 -> binaryValue.padStart(sourceInput.length * 4, '0')
-            8 -> binaryValue.padStart(sourceInput.length * 3, '0')
-            else -> binaryValue
-        }
+    val normalizedBinary = remember(binaryValue) {
+        // 层高表按 1F 开始计数，前导 0 不应计入楼层数
+        binaryValue.trimStart('0').ifEmpty { "0" }
     }
 
-    val totalFloors = paddedBinary.length
-    val totalStops = remember(paddedBinary) { paddedBinary.count { it == '1' } }
+    val totalFloors = normalizedBinary.length
+    val totalStops = remember(normalizedBinary) { normalizedBinary.count { it == '1' } }
 
     Surface(
         modifier = modifier,
@@ -612,9 +600,9 @@ private fun FloorHeightTableAnalysis(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                for (i in paddedBinary.indices) {
+                for (i in normalizedBinary.indices) {
                     val floorNumber = totalFloors - i
-                    val opens = paddedBinary[i] == '1'
+                    val opens = normalizedBinary[i] == '1'
                     Surface(
                         shape = MaterialTheme.shapes.extraSmall,
                         color = if (opens) {
