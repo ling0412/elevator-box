@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.aboutLibraries)
@@ -12,8 +11,8 @@ kotlin {
         freeCompilerArgs.addAll(
             "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
             // 启用 Compose 报告
-            "-P=plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=$layout.buildDirectory/compose_reports",
-            "-P=plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=$layout.buildDirectory/compose_metrics"
+            "-P=plugin:org.jetbrains.kotlin.plugin.compose:reportsDestination=$layout.buildDirectory/compose_reports",
+            "-P=plugin:org.jetbrains.kotlin.plugin.compose:metricsDestination=$layout.buildDirectory/compose_metrics"
         )
     }
 }
@@ -134,7 +133,8 @@ dependencies {
     // OkHttp 核心库
     implementation(libs.okhttp)
 
-    // AboutLibraries Compose UI
+    // AboutLibraries Core + Compose UI
+    implementation(libs.aboutlibraries.core)
     implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.androidx.compose.foundation.layout)
 

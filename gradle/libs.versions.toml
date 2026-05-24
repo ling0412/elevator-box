@@ -1,7 +1,7 @@
 # libs.versions.toml
 
 [versions]
-agp = "9.1.0"
+agp = "9.2.1"
 kotlin = "2.3.20"
 # Compose BOM 版本
 composeBom = "2026.03.01"
@@ -15,7 +15,7 @@ activityCompose = "1.13.0"
 kotlinxSerialization = "1.10.0"
 # OkHttp 版本
 okhttp = "5.3.2"
-aboutLibraries = "13.2.1"
+aboutLibraries = "14.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +45,7 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 # okhttp
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 
+aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 
 # Compose UI 测试库 (版本由 BOM 管理)

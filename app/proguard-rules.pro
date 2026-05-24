@@ -29,6 +29,11 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
+# 3. 保留所有 @Serializable 数据类（避免 R8 剥离字段导致反序列化崩溃）
+-keepclasseswithmembers class * {
+    @kotlinx.serialization.Serializable <fields>;
+}
+
 # ============================================
 # 不需要的规则（会增加体积）：
 # ============================================
