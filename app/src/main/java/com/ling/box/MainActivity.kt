@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
                     updateViewModel.tryAutoCheck()
                 }
 
-                MainAppScreen(initialTabIndex = defaultTabIndex)
+                MainAppScreen(initialTabIndex = defaultTabIndex, updateViewModel = updateViewModel)
 
                 if (showUpdateDialog && updateInfo != null) {
                     UpdateDialog(
@@ -100,7 +100,8 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MainAppScreen(
-    initialTabIndex: Int
+    initialTabIndex: Int,
+    updateViewModel: UpdateViewModel
 ) {
     // 检测屏幕尺寸：使用Configuration来检测屏幕宽度
     val configuration = LocalConfiguration.current
@@ -140,7 +141,7 @@ fun MainAppScreen(
         listOf(
             { padding -> CalculatorScreen(padding) },
             { padding -> CalculateContainerScreen(padding) },
-            { padding -> ShowPage(onStartScreenSelected = { currentOnStartScreenSelected(it) }, paddingValues = padding) }
+            { padding -> ShowPage(onStartScreenSelected = { currentOnStartScreenSelected(it) }, paddingValues = padding, updateViewModel = updateViewModel) }
         )
     }
 

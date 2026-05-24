@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ling.box.R
 import com.ling.box.calculator.model.BalanceCoefficientAlgorithm
 import com.ling.box.calculator.repository.ElevatorRepository
@@ -60,7 +59,8 @@ import kotlinx.coroutines.withContext
 @Composable
 fun ShowPage(
     onStartScreenSelected: (Int) -> Unit,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    updateViewModel: UpdateViewModel
 ) {
     val context = LocalContext.current
     val sharedPreferences = remember { context.getSharedPreferences("app_settings", Context.MODE_PRIVATE) }
@@ -69,6 +69,18 @@ fun ShowPage(
     val showStartScreenDialog = remember { mutableStateOf(false) }
     val showAlgorithmDialog = remember { mutableStateOf(false) }
     val showBalanceRangeDialog = remember { mutableStateOf(false) }
+
+    val toastImportSuccess = stringResource(R.string.toast_import_success)
+    val toastImportFailure = stringResource(R.string.toast_import_failure)
+    val toastExportSuccess = stringResource(R.string.toast_export_success)
+    val toastExportFailure = stringResource(R.string.toast_export_failure)
+    val toastCannotOpenBrowser = stringResource(R.string.toast_cannot_open_browser)
+    val toastExporting = stringResource(R.string.toast_exporting)
+    val toastImporting = stringResource(R.string.toast_importing)
+    val algorithmTwoPoint = stringResource(R.string.algorithm_two_point)
+    val algorithmLinearRegression = stringResource(R.string.algorithm_linear_regression)
+    val toastAlgorithmSwitched = stringResource(R.string.toast_algorithm_switched)
+    val toastBalanceRangeSaved = stringResource(R.string.toast_balance_range_saved)
     
     // 读取当前算法选择
     val currentAlgorithm = remember {
@@ -117,9 +129,9 @@ fun ShowPage(
                 withContext(Dispatchers.Main) {
                     isImporting = false
                     if (success) {
-                        Toast.makeText(context, context.getString(R.string.toast_import_success), Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, toastImportSuccess, Toast.LENGTH_LONG).show()
                     } else {
-                        Toast.makeText(context, context.getString(R.string.toast_import_failure), Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, toastImportFailure, Toast.LENGTH_LONG).show()
                     }
                 }
             }
@@ -139,9 +151,9 @@ fun ShowPage(
                 withContext(Dispatchers.Main) {
                     isExporting = false
                     if (success) {
-                        Toast.makeText(context, context.getString(R.string.toast_export_success), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, toastExportSuccess, Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(context, context.getString(R.string.toast_export_failure), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, toastExportFailure, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -159,7 +171,6 @@ fun ShowPage(
         importFileLauncher.launch("application/json")
     }
 
-    val updateViewModel: UpdateViewModel = viewModel()
     val isCheckingForUpdate by updateViewModel.isChecking.collectAsStateWithLifecycle()
     val updateInfo by updateViewModel.updateInfo.collectAsStateWithLifecycle()
     val showUpdateDialog by updateViewModel.showDialog.collectAsStateWithLifecycle()
@@ -232,7 +243,7 @@ fun ShowPage(
                     try {
                         context.startActivity(intent)
                     } catch (e: Exception) {
-                        Toast.makeText(context, context.getString(R.string.toast_cannot_open_browser), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, toastCannotOpenBrowser, Toast.LENGTH_SHORT).show()
                     }
                 }
             )
@@ -268,14 +279,14 @@ fun ShowPage(
                 if (!isExporting) {
                     handleExport()
                 } else {
-                    Toast.makeText(context, context.getString(R.string.toast_exporting), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, toastExporting, Toast.LENGTH_SHORT).show()
                 }
             },
             onImportClick = {
                 if (!isImporting) {
                     handleImport()
                 } else {
-                    Toast.makeText(context, context.getString(R.string.toast_importing), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, toastImporting, Toast.LENGTH_SHORT).show()
                 }
             },
             onDismiss = { showExportImportDialog = false }
@@ -307,10 +318,10 @@ fun ShowPage(
                 currentAlgorithm.value = algorithm
                 showAlgorithmDialog.value = false
                 val algorithmName = when (algorithm) {
-                    BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION -> context.getString(R.string.algorithm_two_point)
-                    BalanceCoefficientAlgorithm.LINEAR_REGRESSION -> context.getString(R.string.algorithm_linear_regression)
+                    BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION -> algorithmTwoPoint
+                    BalanceCoefficientAlgorithm.LINEAR_REGRESSION -> algorithmLinearRegression
                 }
-                Toast.makeText(context, context.getString(R.string.toast_algorithm_switched, algorithmName), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, String.format(toastAlgorithmSwitched, algorithmName), Toast.LENGTH_SHORT).show()
             },
             onDismiss = { showAlgorithmDialog.value = false }
         )
@@ -334,7 +345,7 @@ fun ShowPage(
                 balanceRangeMax.value = max
                 balanceIdeal.value = ideal
                 showBalanceRangeDialog.value = false
-                Toast.makeText(context, context.getString(R.string.toast_balance_range_saved), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, toastBalanceRangeSaved, Toast.LENGTH_SHORT).show()
             },
             onDismiss = { showBalanceRangeDialog.value = false }
         )

@@ -25,6 +25,7 @@ suspend fun fetchLatestReleaseInfo(owner: String = UpdateConfig.GITHUB_OWNER, re
     val request = Request.Builder()
         .url(urlString)
         .header("Accept", "application/vnd.github.v3+json")
+        .header("User-Agent", "ElevatorBox")
         .build()
 
     try {
