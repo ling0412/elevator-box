@@ -33,16 +33,16 @@ suspend fun fetchLatestReleaseInfo(owner: String = UpdateConfig.GITHUB_OWNER, re
             Log.d("UpdateCheck", "OkHttp Response Code: $responseCode")
 
             if (response.isSuccessful) {
-                val responseBody = response.body?.string()
+                val responseBody = response.body.string()
                 Log.d("UpdateCheck", "OkHttp Response Body: $responseBody")
-                responseBody?.let {
+                responseBody.let {
                     val jsonObject = JSONObject(it)
                     val tagName = jsonObject.getString("tag_name").removePrefix("v")
                     val body = jsonObject.optString("body", "没有提供更新说明。")
                     return@withContext Result.success(UpdateInfo(tagName, body))
-                } ?: return@withContext Result.failure(Exception("响应体为空"))
+                }
             } else {
-                Log.e("UpdateCheck", "OkHttp Error Response: ${response.body?.string()}")
+                Log.e("UpdateCheck", "OkHttp Error Response: ${response.body.string()}")
                 return@withContext Result.failure(Exception("请求失败，响应码: $responseCode"))
             }
         }

@@ -159,7 +159,6 @@ fun BalanceCoefficientDisplay(
             val progressColor = when (dataStatus) {
                 DataStatus.ACCURACY_WARNING -> Color(0xFFFFC107)
                 DataStatus.NORMAL -> if (value > balanceRangeMin && value < balanceRangeMax) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-                else -> Color.Transparent
             }
 
             Spacer(Modifier.height(8.dp))

@@ -20,6 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import com.ling.box.R
+import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,7 +71,10 @@ fun LicenseDialog(
                             )
                         }
 
+                        val libraries by produceLibraries(R.raw.aboutlibraries)
+
                         LibrariesContainer(
+                            libraries = libraries,
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth(),

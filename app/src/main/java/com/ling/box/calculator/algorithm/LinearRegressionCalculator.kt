@@ -458,7 +458,7 @@ class LinearRegressionCalculator : BalanceCoefficientCalculator {
             if (useTrendEstimate) {
                 val trendWeight = if (fittedExtrapolationRatio > 0.5) 0.8 else 0.6
                 val fittedWeight = 1.0 - trendWeight
-                val weightedK = trendBasedEstimate!! * trendWeight + fittedIntersectX * fittedWeight
+                val weightedK = trendBasedEstimate * trendWeight + fittedIntersectX * fittedWeight
                 return Triple(weightedK.coerceIn(finalLowerBound, finalUpperBound), false, averageR2)
             }
             

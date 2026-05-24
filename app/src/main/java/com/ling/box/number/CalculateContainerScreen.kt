@@ -42,7 +42,7 @@ import androidx.compose.ui.res.stringResource
 import com.ling.box.R
 
 // 定义计算器类型的枚举，并关联索引
-enum class CalculatorType(@StringRes val titleResId: Int, val icon: ImageVector, val index: Int) {
+enum class CalculatorType(@param:StringRes val titleResId: Int, val icon: ImageVector, val index: Int) {
     NUMBER_BASE(R.string.title_number_converter, Icons.Filled.SwapHoriz, 0),
     SELF_CHECK(R.string.title_safety_calculator, Icons.Filled.Build, 1)
 
