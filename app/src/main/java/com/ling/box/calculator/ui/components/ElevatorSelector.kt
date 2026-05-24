@@ -72,7 +72,7 @@ fun ElevatorSelector(
     onElevatorSelect: (Int) -> Unit
 ) {
     val currentElevatorIndex by viewModel.currentElevatorIndex.collectAsStateWithLifecycle()
-    val allElevatorList = viewModel.unitStateList
+    val allElevatorList by viewModel.unitStateList.collectAsStateWithLifecycle()
 
     var showRenameDialog by remember { mutableStateOf(false) }
     var elevatorToRenameIndex by remember { mutableIntStateOf(-1) }

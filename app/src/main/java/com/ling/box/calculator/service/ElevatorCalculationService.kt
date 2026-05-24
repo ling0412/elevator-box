@@ -2,6 +2,7 @@ package com.ling.box.calculator.service
 
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.ling.box.calculator.model.UnitState
+import com.ling.box.calculator.model.calculateActualPercentage
 
 /**
  * 电梯计算服务
@@ -77,13 +78,6 @@ object ElevatorCalculationService {
         data.upwardCurrentPoints.addAll(tempUpwardPoints)
         data.downwardCurrentPoints.clear()
         data.downwardCurrentPoints.addAll(tempDownwardPoints)
-    }
-    
-    /**
-     * 计算实际百分比
-     */
-    private fun calculateActualPercentage(actualLoad: Double, ratedLoad: Double): Double {
-        return (actualLoad / ratedLoad) * 100
     }
     
     /**

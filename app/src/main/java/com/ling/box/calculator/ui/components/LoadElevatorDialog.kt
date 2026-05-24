@@ -51,7 +51,7 @@ fun LoadElevatorDialog(
     onDismiss: () -> Unit,
     onSelectElevator: (Int) -> Unit
 ) {
-    val allElevatorList = viewModel.unitStateList
+    val allElevatorList by viewModel.unitStateList.collectAsStateWithLifecycle()
     val currentElevatorIndex by viewModel.currentElevatorIndex.collectAsStateWithLifecycle()
 
     var searchQuery by remember { mutableStateOf("") }

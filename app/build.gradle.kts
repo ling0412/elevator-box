@@ -99,9 +99,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    buildFeatures {
-        compose = true
-    }
 }
 
 dependencies {
@@ -121,8 +118,6 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
-
-    // implementation(libs.androidx.compose.ui.tooling.preview)
 
     // 第三方库
     // Kotlin 序列化
