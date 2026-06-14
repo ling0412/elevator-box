@@ -2,7 +2,6 @@ package com.ling.box.number
 
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -43,11 +42,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -63,10 +64,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.math.BigInteger
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NumberBaseConverterPage() {
+fun NumberBaseConverterPage(snackbarHostState: SnackbarHostState) {
     var inputText by remember { mutableStateOf("") }
     var inputMode by remember { mutableStateOf(InputMode.NUMERIC) }
     var manualBase by remember { mutableStateOf<Int?>(null) }
@@ -77,10 +79,11 @@ fun NumberBaseConverterPage() {
     val selectedBase = manualBase ?: autoDetectedBase
 
     val context = LocalContext.current
-    val clipboardManager = remember { 
-        context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager 
+    val clipboardManager = remember {
+        context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager
     }
     val keyboardController = LocalSoftwareKeyboardController.current // 保留，但下面clear中注释掉了hide
+    val coroutineScope = rememberCoroutineScope()
 
     val conversionResults = remember(inputText, selectedBase) {
         if (inputText.isEmpty() || selectedBase == null) emptyMap()
@@ -150,7 +153,9 @@ fun NumberBaseConverterPage() {
                         onCopy = { value ->
                             val clip = ClipData.newPlainText("转换结果", value)
                             clipboardManager.setPrimaryClip(clip)
-                            Toast.makeText(context, "已复制: $value", Toast.LENGTH_SHORT).show()
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("已复制: $value")
+                            }
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -209,7 +214,9 @@ fun NumberBaseConverterPage() {
                     onCopy = { value ->
                         val clip = ClipData.newPlainText("转换结果", value)
                         clipboardManager.setPrimaryClip(clip)
-                        Toast.makeText(context, "已复制: $value", Toast.LENGTH_SHORT).show()
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("已复制: $value")
+                        }
                     },
                     modifier = Modifier.fillMaxWidth()
                 )

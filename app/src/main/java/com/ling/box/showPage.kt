@@ -3,7 +3,6 @@ package com.ling.box
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -21,6 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -60,7 +60,8 @@ import kotlinx.coroutines.withContext
 fun ShowPage(
     onStartScreenSelected: (Int) -> Unit,
     paddingValues: PaddingValues,
-    updateViewModel: UpdateViewModel
+    updateViewModel: UpdateViewModel,
+    snackbarHostState: SnackbarHostState
 ) {
     val context = LocalContext.current
     val sharedPreferences = remember { context.getSharedPreferences("app_settings", Context.MODE_PRIVATE) }
@@ -69,6 +70,7 @@ fun ShowPage(
     val showStartScreenDialog = remember { mutableStateOf(false) }
     val showAlgorithmDialog = remember { mutableStateOf(false) }
     val showBalanceRangeDialog = remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     val toastImportSuccess = stringResource(R.string.toast_import_success)
     val toastImportFailure = stringResource(R.string.toast_import_failure)
@@ -110,7 +112,6 @@ fun ShowPage(
         stringResource(R.string.nav_calculator),
         stringResource(R.string.nav_settings)
     )
-    val coroutineScope = rememberCoroutineScope()
 
     // 导出/导入相关状态
     var isExporting by remember { mutableStateOf(false) }
@@ -129,9 +130,13 @@ fun ShowPage(
                 withContext(Dispatchers.Main) {
                     isImporting = false
                     if (success) {
-                        Toast.makeText(context, toastImportSuccess, Toast.LENGTH_LONG).show()
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(toastImportSuccess)
+                        }
                     } else {
-                        Toast.makeText(context, toastImportFailure, Toast.LENGTH_LONG).show()
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(toastImportFailure)
+                        }
                     }
                 }
             }
@@ -151,9 +156,13 @@ fun ShowPage(
                 withContext(Dispatchers.Main) {
                     isExporting = false
                     if (success) {
-                        Toast.makeText(context, toastExportSuccess, Toast.LENGTH_SHORT).show()
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(toastExportSuccess)
+                        }
                     } else {
-                        Toast.makeText(context, toastExportFailure, Toast.LENGTH_SHORT).show()
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(toastExportFailure)
+                        }
                     }
                 }
             }
@@ -243,7 +252,9 @@ fun ShowPage(
                     try {
                         context.startActivity(intent)
                     } catch (e: Exception) {
-                        Toast.makeText(context, toastCannotOpenBrowser, Toast.LENGTH_SHORT).show()
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(toastCannotOpenBrowser)
+                        }
                     }
                 }
             )
@@ -270,7 +281,8 @@ fun ShowPage(
     // --- 对话框区域 ---
     LicenseDialog(
         showDialog = showLicenseDialog,
-        onDismiss = { showLicenseDialog = false }
+        onDismiss = { showLicenseDialog = false },
+        snackbarHostState = snackbarHostState
     )
 
     if (showExportImportDialog) {
@@ -279,14 +291,18 @@ fun ShowPage(
                 if (!isExporting) {
                     handleExport()
                 } else {
-                    Toast.makeText(context, toastExporting, Toast.LENGTH_SHORT).show()
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(toastExporting)
+                    }
                 }
             },
             onImportClick = {
                 if (!isImporting) {
                     handleImport()
                 } else {
-                    Toast.makeText(context, toastImporting, Toast.LENGTH_SHORT).show()
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(toastImporting)
+                    }
                 }
             },
             onDismiss = { showExportImportDialog = false }
@@ -321,7 +337,9 @@ fun ShowPage(
                     BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION -> algorithmTwoPoint
                     BalanceCoefficientAlgorithm.LINEAR_REGRESSION -> algorithmLinearRegression
                 }
-                Toast.makeText(context, String.format(toastAlgorithmSwitched, algorithmName), Toast.LENGTH_SHORT).show()
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(String.format(toastAlgorithmSwitched, algorithmName))
+                }
             },
             onDismiss = { showAlgorithmDialog.value = false }
         )
@@ -332,7 +350,8 @@ fun ShowPage(
         if (info != null) {
             SettingsUpdateDialog(
                 updateInfo = info,
-                onDismiss = { updateViewModel.dismissDialog() }
+                onDismiss = { updateViewModel.dismissDialog() },
+                snackbarHostState = snackbarHostState
             )
         }
     }
@@ -348,7 +367,9 @@ fun ShowPage(
                 balanceRangeMax.value = max
                 balanceIdeal.value = ideal
                 showBalanceRangeDialog.value = false
-                Toast.makeText(context, toastBalanceRangeSaved, Toast.LENGTH_SHORT).show()
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(toastBalanceRangeSaved)
+                }
             },
             onDismiss = { showBalanceRangeDialog.value = false }
         )

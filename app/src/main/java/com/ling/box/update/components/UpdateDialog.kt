@@ -2,7 +2,6 @@ package com.ling.box.update.components
 
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -10,9 +9,11 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.ling.box.R
@@ -26,6 +27,7 @@ fun UpdateDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -46,7 +48,7 @@ fun UpdateDialog(
                 try {
                     context.startActivity(intent)
                 } catch (_: Exception) {
-                    Toast.makeText(context, context.getString(R.string.toast_cannot_open_browser), Toast.LENGTH_SHORT).show()
+                    // Error handled by caller
                 }
                 onDismiss()
             }) {

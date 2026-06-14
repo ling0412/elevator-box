@@ -12,8 +12,8 @@ import com.ling.box.settings.data.toExport
 import com.ling.box.settings.data.toUnitState
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class ElevatorRepository(context: Context) {
@@ -164,7 +164,7 @@ class ElevatorRepository(context: Context) {
         val prefix = "elevator_${elevatorIndex}_"
         val name = prefs.getString(prefix + "name", null) ?: "电梯 ${elevatorIndex + 1}"
         val creationDate = prefs.getString(prefix + "creationDate", null)
-            ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+            ?: LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault()))
 
         val customBlockCounts = SnapshotStateList<String>().apply {
             val size = prefs.getInt(prefix + "customBlockCounts_size", 0).coerceAtLeast(0)

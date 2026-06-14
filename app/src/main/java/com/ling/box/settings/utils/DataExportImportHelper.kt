@@ -12,8 +12,8 @@ import com.ling.box.settings.data.SafetyExportData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 object DataExportImportHelper {
@@ -142,7 +142,7 @@ object DataExportImportHelper {
     }
 
     fun generateExportFileName(): String {
-        val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-        return "elevator_data_backup_${dateFormat.format(Date())}.json"
+        val dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss", Locale.getDefault())
+        return "elevator_data_backup_${LocalDateTime.now().format(dateFormat)}.json"
     }
 }

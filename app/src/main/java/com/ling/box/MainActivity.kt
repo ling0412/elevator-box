@@ -3,7 +3,6 @@ package com.ling.box
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -31,12 +30,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,6 +55,7 @@ import com.ling.box.navigation.components.NavigationRailBar
 import com.ling.box.navigation.utils.getDynamicBottomNavTitles
 import com.ling.box.navigation.utils.getDynamicIcons
 import com.ling.box.number.CalculateContainerScreen
+import com.ling.box.ui.components.AppSnackbarHost
 import com.ling.box.ui.theme.系数计算器Theme
 import com.ling.box.update.components.UpdateDialog
 import com.ling.box.update.viewmodel.UpdateViewModel
@@ -74,12 +76,17 @@ class MainActivity : ComponentActivity() {
                 val updateViewModel: UpdateViewModel = viewModel()
                 val showUpdateDialog by updateViewModel.showDialog.collectAsStateWithLifecycle()
                 val updateInfo by updateViewModel.updateInfo.collectAsStateWithLifecycle()
+                val updateMessage by updateViewModel.message.collectAsStateWithLifecycle()
 
                 LaunchedEffect(Unit) {
                     updateViewModel.tryAutoCheck()
                 }
 
-                MainAppScreen(initialTabIndex = defaultTabIndex, updateViewModel = updateViewModel)
+                MainAppScreen(
+                    initialTabIndex = defaultTabIndex,
+                    updateViewModel = updateViewModel,
+                    updateMessage = updateMessage
+                )
 
                 if (showUpdateDialog) {
                     val info = updateInfo
@@ -104,8 +111,19 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainAppScreen(
     initialTabIndex: Int,
-    updateViewModel: UpdateViewModel
+    updateViewModel: UpdateViewModel,
+    updateMessage: String?
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(updateMessage) {
+        updateMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            updateViewModel.clearMessage()
+        }
+    }
+
     // 检测屏幕尺寸：使用Configuration来检测屏幕宽度
     val configuration = LocalConfiguration.current
     // 当屏幕宽度 >= 600dp 时，认为是平板/大屏幕设备
@@ -125,10 +143,7 @@ fun MainAppScreen(
             sharedPreferences.edit {
                 putInt("start_screen_index", index)
             }
-            Toast.makeText(context, context.getString(R.string.toast_start_screen_set, bottomNavTitles[index]), Toast.LENGTH_SHORT).show()
             selectedTabIndex = index
-        } else {
-            Toast.makeText(context, context.getString(R.string.toast_start_screen_invalid), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -143,8 +158,8 @@ fun MainAppScreen(
     val screens: List<@Composable (PaddingValues) -> Unit> = remember {
         listOf(
             { padding -> CalculatorScreen(padding) },
-            { padding -> CalculateContainerScreen(padding) },
-            { padding -> ShowPage(onStartScreenSelected = { currentOnStartScreenSelected(it) }, paddingValues = padding, updateViewModel = updateViewModel) }
+            { padding -> CalculateContainerScreen(padding, snackbarHostState) },
+            { padding -> ShowPage(onStartScreenSelected = { currentOnStartScreenSelected(it) }, paddingValues = padding, updateViewModel = updateViewModel, snackbarHostState = snackbarHostState) }
         )
     }
 
@@ -153,63 +168,71 @@ fun MainAppScreen(
     // 根据屏幕尺寸选择不同的布局
     if (isExpandedScreen) {
         // 大屏幕布局：使用 NavigationRail 和内容宽度限制
-        Row(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // 导航轨道
-            NavigationRailBar(
-                titles = bottomNavTitles,
-                icons = icons,
-                selectedIndex = selectedTabIndex,
-                onTabSelected = { selectedTabIndex = it },
-                animationDurationMillis = animationDurationMillis
-            )
-            
-            // 内容区域，限制最大宽度并居中，添加背景色避免白色闪烁
-            Surface(
+        Scaffold(
+            snackbarHost = {
+                AppSnackbarHost(hostState = snackbarHostState)
+            }
+        ) { scaffoldPadding ->
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
+                    .fillMaxSize()
+                    .padding(scaffoldPadding)
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                // 导航轨道
+                NavigationRailBar(
+                    titles = bottomNavTitles,
+                    icons = icons,
+                    selectedIndex = selectedTabIndex,
+                    onTabSelected = { selectedTabIndex = it },
+                    animationDurationMillis = animationDurationMillis
+                )
+
+                // 内容区域，限制最大宽度并居中，添加背景色避免白色闪烁
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .widthIn(max = 1200.dp) // 限制最大宽度为1200dp
-                            .fillMaxHeight() // 确保内容区域填满可用高度
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        AnimatedContent(
-                            targetState = selectedTabIndex,
-                            transitionSpec = {
-                                // 大屏幕模式下使用淡入淡出动画，增加重叠时间避免闪烁
-                                // 使用更长的动画时间和重叠，让过渡更平滑
-                                fadeIn(
-                                    animationSpec = tween(
-                                        durationMillis = animationDurationMillis + 150,
-                                        easing = FastOutSlowInEasing
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .widthIn(max = 1200.dp) // 限制最大宽度为1200dp
+                                .fillMaxHeight() // 确保内容区域填满可用高度
+                        ) {
+                            AnimatedContent(
+                                targetState = selectedTabIndex,
+                                transitionSpec = {
+                                    // 大屏幕模式下使用淡入淡出动画，增加重叠时间避免闪烁
+                                    // 使用更长的动画时间和重叠，让过渡更平滑
+                                    fadeIn(
+                                        animationSpec = tween(
+                                            durationMillis = animationDurationMillis + 150,
+                                            easing = FastOutSlowInEasing
+                                        )
+                                    ) togetherWith fadeOut(
+                                        animationSpec = tween(
+                                            durationMillis = animationDurationMillis,
+                                            easing = FastOutSlowInEasing
+                                        )
                                     )
-                                ) togetherWith fadeOut(
-                                    animationSpec = tween(
-                                        durationMillis = animationDurationMillis,
-                                        easing = FastOutSlowInEasing
-                                    )
-                                )
-                            }, label = "screenTransition"
-                        ) { targetIndex ->
-                            // 确保每个屏幕都有背景色，避免白色闪烁
-                            Surface(
-                                modifier = Modifier.fillMaxSize(),
-                                color = MaterialTheme.colorScheme.background
-                            ) {
-                                if (targetIndex >= 0 && targetIndex < screens.size) {
-                                    // 大屏幕使用空的 PaddingValues 因为不需要底部导航栏的间距
-                                    screens[targetIndex](PaddingValues())
-                                } else {
-                                    screens[0](PaddingValues())
+                                }, label = "screenTransition"
+                            ) { targetIndex ->
+                                // 确保每个屏幕都有背景色，避免白色闪烁
+                                Surface(
+                                    modifier = Modifier.fillMaxSize(),
+                                    color = MaterialTheme.colorScheme.background
+                                ) {
+                                    if (targetIndex >= 0 && targetIndex < screens.size) {
+                                        // 大屏幕使用空的 PaddingValues 因为不需要底部导航栏的间距
+                                        screens[targetIndex](PaddingValues())
+                                    } else {
+                                        screens[0](PaddingValues())
+                                    }
                                 }
                             }
                         }
@@ -252,6 +275,9 @@ fun MainAppScreen(
                     onTabSelected = { selectedTabIndex = it },
                     animationDurationMillis = animationDurationMillis
                 )
+            },
+            snackbarHost = {
+                AppSnackbarHost(hostState = snackbarHostState)
             }
         ) { innerPadding -> // innerPadding 由 Scaffold 提供，用于主内容区域
             Surface(

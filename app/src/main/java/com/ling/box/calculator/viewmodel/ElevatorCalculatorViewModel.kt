@@ -22,8 +22,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 // --- 定义计算器模式枚举 ---
@@ -66,7 +66,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
     fun addElevator() {
         val currentList = _unitStateList.value
         val newIndex = currentList.size
-        val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault()))
         _unitStateList.value = currentList.add(UnitState(
             name = "电梯 ${newIndex + 1}",
             creationDate = currentDate,

@@ -3,7 +3,6 @@ package com.ling.box.update.viewmodel
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,8 +38,15 @@ class UpdateViewModel(application: Application) : AndroidViewModel(application) 
     private val _showDialog = MutableStateFlow(false)
     val showDialog: StateFlow<Boolean> = _showDialog.asStateFlow()
 
+    private val _message = MutableStateFlow<String?>(null)
+    val message: StateFlow<String?> = _message.asStateFlow()
+
     fun dismissDialog() {
         _showDialog.value = false
+    }
+
+    fun clearMessage() {
+        _message.value = null
     }
 
     fun tryAutoCheck() {
@@ -75,12 +81,12 @@ class UpdateViewModel(application: Application) : AndroidViewModel(application) 
                         _updateInfo.value = info
                         _showDialog.value = true
                     } else if (!isAutomatic) {
-                        Toast.makeText(context, "当前已是最新版本 ($currentVersion)", Toast.LENGTH_SHORT).show()
+                        _message.value = "当前已是最新版本 ($currentVersion)"
                     }
                 }.onFailure { e ->
                     Log.e(TAG, "Update check failed (Automatic: $isAutomatic)", e)
                     if (!isAutomatic) {
-                        Toast.makeText(context, "检查更新失败: ${e.message}", Toast.LENGTH_LONG).show()
+                        _message.value = "检查更新失败: ${e.message}"
                     }
                 }
             }

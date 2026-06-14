@@ -2,7 +2,6 @@ package com.ling.box.settings.components
 
 import android.content.Intent
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,8 +18,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,16 +32,19 @@ import androidx.core.net.toUri
 import com.ling.box.R
 import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LicenseDialog(
     showDialog: Boolean,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     if (showDialog) {
         BasicAlertDialog(
@@ -87,10 +91,14 @@ fun LicenseDialog(
                                         context.startActivity(intent)
                                     } catch (e: Exception) {
                                         Log.e("LicenseDialog", "无法打开项目链接: $e")
-                                        Toast.makeText(context, context.getString(R.string.toast_cannot_open_link), Toast.LENGTH_SHORT).show()
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(context.getString(R.string.toast_cannot_open_link))
+                                        }
                                     }
                                 } else {
-                                    Toast.makeText(context, context.getString(R.string.toast_no_link), Toast.LENGTH_SHORT).show()
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar(context.getString(R.string.toast_no_link))
+                                    }
                                 }
                             }
                         )

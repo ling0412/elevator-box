@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -50,7 +51,7 @@ enum class CalculatorType(@param:StringRes val titleResId: Int, val icon: ImageV
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-fun CalculateContainerScreen(paddingValues: PaddingValues) {
+fun CalculateContainerScreen(paddingValues: PaddingValues, snackbarHostState: SnackbarHostState) {
     var selectedTabIndex by remember { mutableIntStateOf(CalculatorType.NUMBER_BASE.index) }
 
     val selectedCalculator = remember(selectedTabIndex) {
@@ -147,7 +148,7 @@ fun CalculateContainerScreen(paddingValues: PaddingValues) {
                 ) { targetCalculator ->
                     when (targetCalculator) {
                         CalculatorType.SELF_CHECK -> ElevatorSafetyCalculator()
-                        CalculatorType.NUMBER_BASE -> NumberBaseConverterPage()
+                        CalculatorType.NUMBER_BASE -> NumberBaseConverterPage(snackbarHostState)
                     }
                 }
             }
@@ -181,7 +182,7 @@ fun CalculateContainerScreen(paddingValues: PaddingValues) {
                 ) { targetCalculator ->
                     when (targetCalculator) {
                         CalculatorType.SELF_CHECK -> ElevatorSafetyCalculator()
-                        CalculatorType.NUMBER_BASE -> NumberBaseConverterPage()
+                        CalculatorType.NUMBER_BASE -> NumberBaseConverterPage(snackbarHostState)
                     }
                 }
             }

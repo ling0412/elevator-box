@@ -1,7 +1,6 @@
 package com.ling.box.settings.components
 
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,7 +11,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -23,13 +24,16 @@ import com.ling.box.R
 import com.ling.box.update.config.UpdateConfig
 import com.ling.box.update.data.UpdateInfo
 import com.ling.box.update.utils.getAppVersionName
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsUpdateDialog(
     updateInfo: UpdateInfo,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    snackbarHostState: SnackbarHostState
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -50,7 +54,9 @@ fun SettingsUpdateDialog(
                 try {
                     context.startActivity(intent)
                 } catch (_: Exception) {
-                    Toast.makeText(context, context.getString(R.string.toast_cannot_open_browser), Toast.LENGTH_SHORT).show()
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(context.getString(R.string.toast_cannot_open_browser))
+                    }
                 }
                 onDismiss()
             }) {
