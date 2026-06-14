@@ -38,10 +38,12 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import android.content.Context
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -55,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ling.box.R
+import com.ling.box.calculator.model.BalanceCoefficientAlgorithm
 import com.ling.box.calculator.model.ElevatorUiState
 import com.ling.box.calculator.repository.ElevatorRepository
 import com.ling.box.calculator.ui.components.BalanceCoefficientDisplay
@@ -74,9 +77,22 @@ import com.ling.box.calculator.viewmodel.ElevatorCalculatorViewModel
 @Composable
 fun CalculatorScreen(paddingValues: PaddingValues) {
     val calculatorViewModel: ElevatorCalculatorViewModel = viewModel()
+    val context = LocalContext.current
 
     val uiState by calculatorViewModel.currentElevatorUiState.collectAsStateWithLifecycle()
     val currentElevatorIndex by calculatorViewModel.currentElevatorIndex.collectAsStateWithLifecycle()
+    val selectedAlgorithm by calculatorViewModel.selectedAlgorithm.collectAsStateWithLifecycle()
+
+    // 检测算法变化并触发重新计算
+    LaunchedEffect(Unit) {
+        val prefs = context.getSharedPreferences("elevator_calculator_prefs", Context.MODE_PRIVATE)
+        val savedAlgorithmOrdinal = prefs.getInt("balance_coefficient_algorithm", BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION.ordinal)
+        val savedAlgorithm = BalanceCoefficientAlgorithm.entries.getOrNull(savedAlgorithmOrdinal) ?: BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION
+        
+        if (savedAlgorithm != selectedAlgorithm) {
+            calculatorViewModel.setBalanceCoefficientAlgorithm(savedAlgorithm)
+        }
+    }
 
     AnimatedContent(
         targetState = currentElevatorIndex,
