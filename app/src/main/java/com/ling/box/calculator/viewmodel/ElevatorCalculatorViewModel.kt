@@ -79,20 +79,27 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
     }
 
     fun updateElevatorName(index: Int, newName: String) {
-        mutateAt(index) { it.copy(name = newName.trim()) }
-        repository.saveState(index, _unitStateList.value.getOrNull(index)!!)
+        val elevator = _unitStateList.value.getOrNull(index)
+        if (elevator != null) {
+            val updated = elevator.withUpdatedName(newName)
+            _unitStateList.value = _unitStateList.value.toMutableList().also { it[index] = updated }
+            repository.saveState(index, updated)
+        }
     }
 
     fun addStandardBlockSlot(blocks: Int) {
-        mutateCurrentElevator { data ->
+        updateCurrentElevator { data ->
+            var updated = data
             if (!data.useCustomBlockInput) {
-                data.useCustomBlockInput = true
-                data.useManualBalance = false
+                updated = updated.withUpdatedUseCustomBlockInput(true)
+                    .withUpdatedUseManualBalance(false)
             }
-            data.customBlockCounts.add(blocks.toString())
-            data.customBlockPercentages.add(null)
-            data.currentReadings.forEach { it.add("") }
-            repository.saveState(getCurrentElevatorIndex(), data)
+            updated = updated.withAddedCustomBlockCountSlot()
+            // Update the added slot with the block count
+            val lastIndex = updated.customBlockCounts.size - 1
+            updated = updated.withUpdatedCustomBlockCount(lastIndex, blocks.toString())
+            repository.saveState(getCurrentElevatorIndex(), updated)
+            updated
         }
         triggerFullRecalculation()
     }
@@ -131,7 +138,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
             repository.updateLastAccessTime(_currentElevatorIndex.value)
 
             if (getCurrentData()?.useCustomBlockInput == true && getCurrentData()?.customBlockCounts?.isEmpty() == true) {
-                mutateCurrentElevator { it.addInitialBlockSlot() }
+                updateCurrentElevator { it.addInitialBlockSlot() }
             }
 
             triggerFullRecalculation()
@@ -148,7 +155,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
             repository.saveCurrentElevatorIndex(index)
             repository.updateLastAccessTime(index)
             if (getCurrentData()?.useCustomBlockInput == true && getCurrentData()?.customBlockCounts?.isEmpty() == true) {
-                mutateCurrentElevator { it.addInitialBlockSlot() }
+                updateCurrentElevator { it.addInitialBlockSlot() }
             }
             triggerFullRecalculation()
         }
@@ -220,9 +227,10 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
 
     fun updateRatedLoad(value: String) {
         if (value.matches(UNSIGNED_DECIMAL_REGEX)) {
-            mutateCurrentElevator { data ->
-                data.ratedLoad = value
-                repository.saveState(getCurrentElevatorIndex(), data)
+            updateCurrentElevator { data ->
+                val updated = data.withUpdatedRatedLoad(value)
+                repository.saveState(getCurrentElevatorIndex(), updated)
+                updated
             }
             triggerFullRecalculation()
         }
@@ -230,9 +238,10 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
 
     fun updateCounterweightWeight(value: String) {
         if (value.matches(UNSIGNED_DECIMAL_REGEX)) {
-            mutateCurrentElevator { data ->
-                data.counterweightWeight = value
-                repository.saveState(getCurrentElevatorIndex(), data)
+            updateCurrentElevator { data ->
+                val updated = data.withUpdatedCounterweightWeight(value)
+                repository.saveState(getCurrentElevatorIndex(), updated)
+                updated
             }
             triggerRecalculationAndRecommendation()
         }
@@ -240,9 +249,10 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
 
     fun updateCounterweightBlockWeight(value: String) {
         if (value.matches(UNSIGNED_DECIMAL_REGEX)) {
-            mutateCurrentElevator { data ->
-                data.counterweightBlockWeight = value
-                repository.saveState(getCurrentElevatorIndex(), data)
+            updateCurrentElevator { data ->
+                val updated = data.withUpdatedCounterweightBlockWeight(value)
+                repository.saveState(getCurrentElevatorIndex(), updated)
+                updated
             }
             triggerFullRecalculation()
         }
@@ -254,15 +264,17 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
         val filteredValue = value.takeIf { it?.matches(SIGNED_DECIMAL_REGEX) == true }
         val parsedK = filteredValue?.toDoubleOrNull()
 
-        mutateCurrentElevator { data ->
+        updateCurrentElevator { data ->
             val isValueInValidRange = parsedK == null || (parsedK >= minKThreshold && parsedK <= maxKThreshold)
-            if (isValueInValidRange) {
-                data.manualBalanceCoefficientK = filteredValue
-                repository.saveState(getCurrentElevatorIndex(), data)
-            } else if ((filteredValue as String?).isNullOrEmpty()) {
-                data.manualBalanceCoefficientK = null
-                repository.saveState(getCurrentElevatorIndex(), data)
+            val updated = if (isValueInValidRange) {
+                data.withUpdatedManualBalanceCoefficientK(filteredValue)
+            } else if (filteredValue.isNullOrEmpty()) {
+                data.withUpdatedManualBalanceCoefficientK(null)
+            } else {
+                data
             }
+            repository.saveState(getCurrentElevatorIndex(), updated)
+            updated
         }
 
         if (getCurrentData()?.useManualBalance == true) {
@@ -271,17 +283,18 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
     }
 
     fun toggleManualBalance(isChecked: Boolean) {
-        mutateCurrentElevator { data ->
-            data.useManualBalance = isChecked
+        updateCurrentElevator { data ->
+            var updated = data.withUpdatedUseManualBalance(isChecked)
             if (isChecked) {
-                data.useCustomBlockInput = false
+                updated = updated.withUpdatedUseCustomBlockInput(false)
             } else {
-                data.useCustomBlockInput = true
-                if (data.customBlockCounts.isEmpty()) {
-                    data.addInitialBlockSlot()
+                updated = updated.withUpdatedUseCustomBlockInput(true)
+                if (updated.customBlockCounts.isEmpty()) {
+                    updated = updated.addInitialBlockSlot()
                 }
             }
-            repository.saveState(getCurrentElevatorIndex(), data)
+            repository.saveState(getCurrentElevatorIndex(), updated)
+            updated
         }
         if (!isChecked) {
             triggerFullRecalculation()
@@ -292,81 +305,87 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
     }
 
     fun toggleCustomBlockInput(isChecked: Boolean) {
-        mutateCurrentElevator { data ->
-            data.useCustomBlockInput = isChecked
+        updateCurrentElevator { data ->
+            var updated = data.withUpdatedUseCustomBlockInput(isChecked)
             if (isChecked) {
-                data.useManualBalance = false
-                if (data.customBlockCounts.isEmpty()) {
-                    data.addInitialBlockSlot()
+                updated = updated.withUpdatedUseManualBalance(false)
+                if (updated.customBlockCounts.isEmpty()) {
+                    updated = updated.addInitialBlockSlot()
                 }
             } else {
-                data.customBlockCounts.clear()
-                data.customBlockPercentages.clear()
-                data.currentReadings.forEach { it.clear() }
+                updated = updated.copy(
+                    customBlockCounts = emptyList(),
+                    customBlockPercentages = emptyList(),
+                    currentReadings = listOf(emptyList(), emptyList())
+                )
             }
-            repository.saveState(getCurrentElevatorIndex(), data)
+            repository.saveState(getCurrentElevatorIndex(), updated)
+            updated
         }
         triggerFullRecalculation()
     }
 
     fun updateCustomBlockCount(index: Int, value: String) {
         if (value.matches(INTEGER_REGEX)) {
-            mutateCurrentElevator { data ->
-                ElevatorCalculationService.ensureListSize(data.customBlockCounts, index + 1, "")
-                ElevatorCalculationService.ensureListSize(data.customBlockPercentages, index + 1, null)
-                data.currentReadings.forEach { currentList -> ElevatorCalculationService.ensureListSize(currentList, index + 1, "") }
-                data.customBlockCounts[index] = value
-                repository.saveState(getCurrentElevatorIndex(), data)
+            updateCurrentElevator { data ->
+                // Ensure the list has enough elements
+                var updated = data
+                while (updated.customBlockCounts.size <= index) {
+                    updated = updated.withAddedCustomBlockCountSlot()
+                }
+                updated = updated.withUpdatedCustomBlockCount(index, value)
+                updated = ElevatorCalculationService.updateCustomBlockPercentages(updated)
+                repository.saveState(getCurrentElevatorIndex(), updated)
+                updated
             }
-            getCurrentData()?.let { ElevatorCalculationService.updateCustomBlockPercentages(it) }
             triggerRecalculationOnly()
             calculateRecommendedBlocksForCurrent()
         }
     }
 
     fun addCustomBlockCountSlot() {
-        mutateCurrentElevator { data ->
-            data.addInitialBlockSlot()
-            repository.saveState(getCurrentElevatorIndex(), data)
+        updateCurrentElevator { data ->
+            val updated = data.addInitialBlockSlot()
+            repository.saveState(getCurrentElevatorIndex(), updated)
+            updated
         }
         triggerRecalculationOnly()
     }
 
     fun removeCustomBlockCountSlot(index: Int) {
-        mutateCurrentElevator { data ->
-            if (data.customBlockCounts.size > 1 && index in data.customBlockCounts.indices) {
-                data.customBlockCounts.removeAt(index)
-                if (index < data.customBlockPercentages.size) {
-                    data.customBlockPercentages.removeAt(index)
-                }
-                data.currentReadings.forEach { it.removeAt(index) }
-                repository.saveState(getCurrentElevatorIndex(), data)
+        updateCurrentElevator { data ->
+            val updated = data.withRemovedCustomBlockCountSlot(index)
+            if (updated != data) {
+                repository.saveState(getCurrentElevatorIndex(), updated)
             }
+            updated
         }
         triggerFullRecalculation()
     }
 
     fun updateCurrentReading(directionIndex: Int, pointIndex: Int, value: String) {
         if (!(directionIndex == 0 || directionIndex == 1)) return
-        mutateCurrentElevator { data ->
-            if (value.matches(UNSIGNED_DECIMAL_REGEX)) {
-                ElevatorCalculationService.ensureListSize(data.customBlockCounts, pointIndex + 1, "")
-                ElevatorCalculationService.ensureListSize(data.customBlockPercentages, pointIndex + 1, null)
-                ElevatorCalculationService.ensureListSize(data.currentReadings[directionIndex], pointIndex + 1, "")
-                data.currentReadings[directionIndex][pointIndex] = value
-                val otherDirection = 1 - directionIndex
-                ElevatorCalculationService.ensureListSize(data.currentReadings[otherDirection], pointIndex + 1, "")
-                repository.saveState(getCurrentElevatorIndex(), data)
+        if (value.matches(UNSIGNED_DECIMAL_REGEX)) {
+            updateCurrentElevator { data ->
+                // Ensure the list has enough elements
+                var updated = data
+                while (updated.customBlockCounts.size <= pointIndex) {
+                    updated = updated.withAddedCustomBlockCountSlot()
+                }
+                updated = updated.withUpdatedCurrentReading(directionIndex, pointIndex, value)
+                repository.saveState(getCurrentElevatorIndex(), updated)
+                updated
             }
+            triggerRecalculationOnly()
+            calculateRecommendedBlocksForCurrent()
         }
-        triggerRecalculationOnly()
-        calculateRecommendedBlocksForCurrent()
     }
 
     fun clearCurrentElevatorData() {
-        mutateCurrentElevator { data ->
-            data.resetCurrentInputData()
-            repository.saveState(getCurrentElevatorIndex(), data)
+        updateCurrentElevator { data ->
+            val updated = data.resetCurrentInputData()
+            repository.saveState(getCurrentElevatorIndex(), updated)
+            updated
         }
         triggerFullRecalculation()
     }
@@ -389,21 +408,12 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
         return _currentElevatorIndex.value
     }
 
-    private inline fun mutateAt(index: Int, crossinline transform: (UnitState) -> UnitState) {
-        _unitStateList.value = _unitStateList.value.toMutableList().also { list ->
-            list.getOrNull(index)?.let { old -> list[index] = transform(old) }
-        }
-    }
-
-    private inline fun mutateCurrentElevator(crossinline action: (UnitState) -> Unit) {
+    private inline fun updateCurrentElevator(crossinline transform: (UnitState) -> UnitState) {
         val index = _currentElevatorIndex.value
         val currentList = _unitStateList.value
         if (index in currentList.indices) {
-            val updatedList = currentList.toMutableList()
-            val copy = updatedList[index].deepCopy()
-            action(copy)
-            updatedList[index] = copy
-            _unitStateList.value = updatedList
+            val updatedState = transform(currentList[index])
+            _unitStateList.value = currentList.toMutableList().also { it[index] = updatedState }
         }
     }
 
@@ -411,16 +421,15 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
         val index = _currentElevatorIndex.value
         val currentList = _unitStateList.value
         val data = currentList.getOrNull(index) ?: return
-        val updatedList = currentList.toMutableList()
-        val copy = updatedList[index].deepCopy()
-
-        if (copy.useManualBalance) {
-            copy.balanceCoefficientK = copy.manualBalanceCoefficientK?.toDoubleOrNull()
-            copy.hasActualIntersection = true
-            copy.upwardCurrentPoints.clear()
-            copy.downwardCurrentPoints.clear()
+        
+        var updated = data
+        if (updated.useManualBalance) {
+            updated = updated.withUpdatedBalanceCoefficientK(updated.manualBalanceCoefficientK?.toDoubleOrNull())
+                .withUpdatedHasActualIntersection(true)
+                .withUpdatedUpwardCurrentPoints(emptyList())
+                .withUpdatedDownwardCurrentPoints(emptyList())
         } else {
-            ElevatorCalculationService.updateCurrentPoints(copy)
+            updated = ElevatorCalculationService.updateCurrentPoints(updated)
             val algorithm = BalanceCoefficientAlgorithm.entries.getOrNull(
                 repository.getAlgorithmSelection(BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION.ordinal)
             ) ?: BalanceCoefficientAlgorithm.TWO_POINT_INTERSECTION
@@ -431,55 +440,54 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
                 BalanceCoefficientAlgorithm.LINEAR_REGRESSION -> linearRegressionCalculator
             }
             val (k, hasActual, r2) = calculator.calculate(
-                copy.upwardCurrentPoints.toList(),
-                copy.downwardCurrentPoints.toList()
+                updated.upwardCurrentPoints,
+                updated.downwardCurrentPoints
             )
-            copy.balanceCoefficientK = k
-            copy.hasActualIntersection = hasActual
-            copy.linearRegressionR2 = r2
+            updated = updated.withUpdatedBalanceCoefficientK(k)
+                .withUpdatedHasActualIntersection(hasActual)
+                .withUpdatedLinearRegressionR2(r2)
         }
-        val ratedLoadVal = copy.ratedLoad.toDoubleOrNull()
-        val counterweightVal = copy.counterweightWeight.toDoubleOrNull()
-        if (ratedLoadVal != null && counterweightVal != null && ratedLoadVal > 0) {
-            copy.balanceCoefficient = (counterweightVal / ratedLoadVal) * 100
+        val ratedLoadVal = updated.ratedLoad.toDoubleOrNull()
+        val counterweightVal = updated.counterweightWeight.toDoubleOrNull()
+        updated = if (ratedLoadVal != null && counterweightVal != null && ratedLoadVal > 0) {
+            updated.withUpdatedBalanceCoefficient((counterweightVal / ratedLoadVal) * 100)
         } else {
-            copy.balanceCoefficient = null
+            updated.withUpdatedBalanceCoefficient(null)
         }
-        updatedList[index] = copy
-        _unitStateList.value = updatedList
+        _unitStateList.value = currentList.toMutableList().also { it[index] = updated }
     }
 
     private fun calculateRecommendedBlocksForCurrent() {
         val index = _currentElevatorIndex.value
         val currentList = _unitStateList.value
         val data = currentList.getOrNull(index) ?: return
-        val updatedList = currentList.toMutableList()
-        val copy = updatedList[index].deepCopy()
-
-        val currentK = if (copy.useManualBalance) {
-            copy.manualBalanceCoefficientK?.toDoubleOrNull()
+        
+        val currentK = if (data.useManualBalance) {
+            data.manualBalanceCoefficientK?.toDoubleOrNull()
         } else {
-            copy.balanceCoefficientK
+            data.balanceCoefficientK
         }
 
         val targetKMin = repository.getBalanceRangeMin().toDouble()
         val targetKMax = repository.getBalanceRangeMax().toDouble()
         val idealK = repository.getBalanceIdeal().toDouble()
 
-        copy.recommendedBlocksMessage = RecommendedBlocksCalculator.calculate(
+        val message = RecommendedBlocksCalculator.calculate(
             currentBalanceCoefficient = currentK,
-            ratedLoadVal = copy.ratedLoad.toDoubleOrNull(),
-            singleBlockWeightVal = copy.counterweightWeight.toDoubleOrNull(),
+            ratedLoadVal = data.ratedLoad.toDoubleOrNull(),
+            singleBlockWeightVal = data.counterweightWeight.toDoubleOrNull(),
             targetKMin = targetKMin,
             targetKMax = targetKMax,
             idealK = idealK
         )
-        updatedList[index] = copy
-        _unitStateList.value = updatedList
+        val updated = data.withUpdatedRecommendedBlocksMessage(message)
+        _unitStateList.value = currentList.toMutableList().also { it[index] = updated }
     }
 
     private fun triggerFullRecalculation() {
-        getCurrentData()?.let { ElevatorCalculationService.updateCustomBlockPercentages(it) }
+        updateCurrentElevator { data ->
+            ElevatorCalculationService.updateCustomBlockPercentages(data)
+        }
         triggerRecalculationOnly()
         calculateRecommendedBlocksForCurrent()
     }

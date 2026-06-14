@@ -1,7 +1,5 @@
 package com.ling.box.settings.data
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.ling.box.calculator.model.UnitState
 import kotlinx.serialization.Serializable
 
@@ -14,22 +12,37 @@ fun UnitState.toExport(): UnitStateExport = UnitStateExport(
     manualBalanceCoefficientK = manualBalanceCoefficientK,
     useManualBalance = useManualBalance,
     useCustomBlockInput = useCustomBlockInput,
-    customBlockCounts = customBlockCounts.toList(),
-    currentReadings = currentReadings.map { it.toList() }
+    customBlockCounts = customBlockCounts,
+    currentReadings = currentReadings
 )
 
 fun UnitStateExport.toUnitState(): UnitState {
-    val blockCounts = mutableStateListOf<String>().apply { addAll(customBlockCounts) }
-    val readings = mutableStateListOf<SnapshotStateList<String>>().apply {
-        currentReadings.forEach { direction ->
-            add(mutableStateListOf<String>().apply { addAll(direction) })
+    // 确保至少有一个块数槽位
+    val blockCounts = if (customBlockCounts.isEmpty()) {
+        listOf("")
+    } else {
+        customBlockCounts
+    }
+    
+    // 确保 currentReadings 有两个方向，并且每个方向有足够的槽位
+    val readings = if (currentReadings.size < 2) {
+        listOf(
+            currentReadings.getOrNull(0) ?: listOf(""),
+            currentReadings.getOrNull(1) ?: listOf("")
+        )
+    } else {
+        currentReadings
+    }
+    
+    // 确保 readings 的每个方向有足够的槽位
+    val adjustedReadings = readings.map { direction ->
+        if (direction.size < blockCounts.size) {
+            direction + List(blockCounts.size - direction.size) { "" }
+        } else {
+            direction
         }
-        while (size < 2) add(mutableStateListOf())
     }
-    if (blockCounts.isEmpty()) {
-        blockCounts.add("")
-        readings.forEach { it.add("") }
-    }
+    
     return UnitState(
         name = name,
         creationDate = creationDate,
@@ -40,8 +53,8 @@ fun UnitStateExport.toUnitState(): UnitState {
         useManualBalance = useManualBalance,
         useCustomBlockInput = useCustomBlockInput,
         customBlockCounts = blockCounts,
-        customBlockPercentages = mutableStateListOf<Double?>().apply { repeat(blockCounts.size) { add(null) } },
-        currentReadings = readings
+        customBlockPercentages = List(blockCounts.size) { null },
+        currentReadings = adjustedReadings
     )
 }
 

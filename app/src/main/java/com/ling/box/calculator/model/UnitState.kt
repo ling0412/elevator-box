@@ -1,102 +1,148 @@
 package com.ling.box.calculator.model
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
-
-// 定义单台电梯的所有内部状态数据
+// 定义单台电梯的所有内部状态数据（不可变版本）
 data class UnitState(
-    var name: String = "", // 电梯名称
+    val name: String = "", // 电梯名称
     val creationDate: String,
 
     // 基础输入
-    var ratedLoad: String = "1050",
-    var counterweightWeight: String = "",  // 对重
-    var counterweightBlockWeight: String = "25",
-    var manualBalanceCoefficientK: String? = null,
-    var useManualBalance: Boolean = false,
-    var useCustomBlockInput: Boolean = true, // 电梯默认自定义模式
+    val ratedLoad: String = "1050",
+    val counterweightWeight: String = "",  // 对重
+    val counterweightBlockWeight: String = "25",
+    val manualBalanceCoefficientK: String? = null,
+    val useManualBalance: Boolean = false,
+    val useCustomBlockInput: Boolean = true, // 电梯默认自定义模式
 
-    // 列表输入
-    val customBlockCounts: SnapshotStateList<String> = mutableStateListOf(), // 初始化为空列表
-    val customBlockPercentages: SnapshotStateList<Double?> = mutableStateListOf(), // 初始化为空列表
-    val currentReadings: SnapshotStateList<SnapshotStateList<String>> = mutableStateListOf(
-        mutableStateListOf(), // 上行 [0]
-        mutableStateListOf()  // 下行 [1]
-    ),
+    // 列表输入（使用不可变 List）
+    val customBlockCounts: List<String> = emptyList(),
+    val customBlockPercentages: List<Double?> = emptyList(),
+    val currentReadings: List<List<String>> = listOf(emptyList(), emptyList()), // [上行, 下行]
 
     // 计算结果
-    var balanceCoefficientK: Double? = null, // 电流法计算结果 K
-    var balanceCoefficient: Double? = null,
-    var recommendedBlocksMessage: String? = null,
-    var hasActualIntersection: Boolean = false,
-    var linearRegressionR2: Double? = null, // 线性拟合算法的R²值（决定系数）
+    val balanceCoefficientK: Double? = null, // 电流法计算结果 K
+    val balanceCoefficient: Double? = null,
+    val recommendedBlocksMessage: String? = null,
+    val hasActualIntersection: Boolean = false,
+    val linearRegressionR2: Double? = null, // 线性拟合算法的R²值（决定系数）
 
     // 图表数据点
-    val upwardCurrentPoints: SnapshotStateList<Pair<Double, Float>> = mutableStateListOf(),
-    val downwardCurrentPoints: SnapshotStateList<Pair<Double, Float>> = mutableStateListOf()
+    val upwardCurrentPoints: List<Pair<Double, Float>> = emptyList(),
+    val downwardCurrentPoints: List<Pair<Double, Float>> = emptyList()
 ) {
-    // 重置方法，现在只重置输入数据，保持基本信息不变
-    fun resetCurrentInputData() {
-        manualBalanceCoefficientK = null
-        // 模式保持不变，只清空与模式相关的数据
-        if (useCustomBlockInput) {
-            customBlockCounts.clear()
-            customBlockPercentages.clear()
-            currentReadings.forEach { list -> list.clear() }
-            addInitialBlockSlot() // 清空后添加一个初始行
-        } else { // 如果是手动模式，清空 K 值
-            manualBalanceCoefficientK = null
-        }
-
-        balanceCoefficientK = null
-        balanceCoefficient = null
-        recommendedBlocksMessage = null
-        hasActualIntersection = false
-        linearRegressionR2 = null
-        upwardCurrentPoints.clear()
-        downwardCurrentPoints.clear()
+    // 便捷更新方法
+    
+    fun withUpdatedName(newName: String): UnitState = copy(name = newName.trim())
+    
+    fun withUpdatedRatedLoad(value: String): UnitState = copy(ratedLoad = value)
+    
+    fun withUpdatedCounterweightWeight(value: String): UnitState = copy(counterweightWeight = value)
+    
+    fun withUpdatedCounterweightBlockWeight(value: String): UnitState = copy(counterweightBlockWeight = value)
+    
+    fun withUpdatedManualBalanceCoefficientK(value: String?): UnitState = copy(manualBalanceCoefficientK = value)
+    
+    fun withUpdatedUseManualBalance(isChecked: Boolean): UnitState = copy(useManualBalance = isChecked)
+    
+    fun withUpdatedUseCustomBlockInput(isChecked: Boolean): UnitState = copy(useCustomBlockInput = isChecked)
+    
+    fun withUpdatedCustomBlockCount(index: Int, value: String): UnitState {
+        if (index !in customBlockCounts.indices) return this
+        return copy(
+            customBlockCounts = customBlockCounts.toMutableList().apply { this[index] = value }
+        )
     }
-
-    fun addInitialBlockSlot() {
-        customBlockCounts.add("")
-        customBlockPercentages.add(null)
-        // 确保 currentReadings 也有对应的空槽位
-        if (currentReadings.size < 2) {
-            // 如果还不足2个，先添加方向列表
-            while (currentReadings.size < 2) {
-                currentReadings.add(mutableStateListOf())
-            }
-        }
-        currentReadings.forEach { it.add("") }
+    
+    fun withAddedCustomBlockCountSlot(): UnitState {
+        return copy(
+            customBlockCounts = customBlockCounts + "",
+            customBlockPercentages = customBlockPercentages + null,
+            currentReadings = currentReadings.map { it + "" }
+        )
     }
-
-    /**
-     * 创建真正独立的深拷贝，所有 SnapshotStateList 都会创建新实例。
-     * data class 的 copy() 只做浅拷贝，列表字段会共享引用，
-     * 导致修改副本时原对象也被同步修改，破坏原子更新语义。
-     */
-    fun deepCopy(): UnitState = UnitState(
-        name = name,
-        creationDate = creationDate,
-        ratedLoad = ratedLoad,
-        counterweightWeight = counterweightWeight,
-        counterweightBlockWeight = counterweightBlockWeight,
-        manualBalanceCoefficientK = manualBalanceCoefficientK,
-        useManualBalance = useManualBalance,
-        useCustomBlockInput = useCustomBlockInput,
-        customBlockCounts = mutableStateListOf<String>().also { it.addAll(customBlockCounts) },
-        customBlockPercentages = mutableStateListOf<Double?>().also { it.addAll(customBlockPercentages) },
-        currentReadings = mutableStateListOf<SnapshotStateList<String>>().also { outer ->
-            currentReadings.forEach { inner ->
-                outer.add(mutableStateListOf<String>().also { it.addAll(inner) })
+    
+    fun withRemovedCustomBlockCountSlot(index: Int): UnitState {
+        if (customBlockCounts.size <= 1 || index !in customBlockCounts.indices) return this
+        return copy(
+            customBlockCounts = customBlockCounts.toMutableList().apply { removeAt(index) },
+            customBlockPercentages = customBlockPercentages.toMutableList().apply { 
+                if (index < size) removeAt(index) 
+            },
+            currentReadings = currentReadings.map { readings ->
+                readings.toMutableList().apply { 
+                    if (index < size) removeAt(index) 
+                }
             }
-        },
-        balanceCoefficientK = balanceCoefficientK,
-        balanceCoefficient = balanceCoefficient,
-        recommendedBlocksMessage = recommendedBlocksMessage,
-        hasActualIntersection = hasActualIntersection,
-        linearRegressionR2 = linearRegressionR2,
-        upwardCurrentPoints = mutableStateListOf<Pair<Double, Float>>().also { it.addAll(upwardCurrentPoints) },
-        downwardCurrentPoints = mutableStateListOf<Pair<Double, Float>>().also { it.addAll(downwardCurrentPoints) },
-    )
+        )
+    }
+    
+    fun withUpdatedCurrentReading(directionIndex: Int, pointIndex: Int, value: String): UnitState {
+        if (directionIndex !in currentReadings.indices) return this
+        if (pointIndex !in currentReadings[directionIndex].indices) return this
+        
+        return copy(
+            currentReadings = currentReadings.mapIndexed { dir, readings ->
+                if (dir == directionIndex) {
+                    readings.toMutableList().apply { this[pointIndex] = value }
+                } else {
+                    readings
+                }
+            }
+        )
+    }
+    
+    fun withUpdatedBalanceCoefficientK(k: Double?): UnitState = copy(balanceCoefficientK = k)
+    
+    fun withUpdatedBalanceCoefficient(value: Double?): UnitState = copy(balanceCoefficient = value)
+    
+    fun withUpdatedRecommendedBlocksMessage(message: String?): UnitState = copy(recommendedBlocksMessage = message)
+    
+    fun withUpdatedHasActualIntersection(value: Boolean): UnitState = copy(hasActualIntersection = value)
+    
+    fun withUpdatedLinearRegressionR2(value: Double?): UnitState = copy(linearRegressionR2 = value)
+    
+    fun withUpdatedUpwardCurrentPoints(points: List<Pair<Double, Float>>): UnitState = 
+        copy(upwardCurrentPoints = points)
+    
+    fun withUpdatedDownwardCurrentPoints(points: List<Pair<Double, Float>>): UnitState = 
+        copy(downwardCurrentPoints = points)
+    
+    // 重置方法，返回新的不可变实例
+    fun resetCurrentInputData(): UnitState {
+        return if (useCustomBlockInput) {
+            // 清空自定义块数据，添加一个初始行
+            copy(
+                manualBalanceCoefficientK = null,
+                customBlockCounts = listOf(""),
+                customBlockPercentages = listOf(null),
+                currentReadings = listOf(listOf(""), listOf("")),
+                balanceCoefficientK = null,
+                balanceCoefficient = null,
+                recommendedBlocksMessage = null,
+                hasActualIntersection = false,
+                linearRegressionR2 = null,
+                upwardCurrentPoints = emptyList(),
+                downwardCurrentPoints = emptyList()
+            )
+        } else {
+            // 手动模式，只清空 K 值
+            copy(
+                manualBalanceCoefficientK = null,
+                balanceCoefficientK = null,
+                balanceCoefficient = null,
+                recommendedBlocksMessage = null,
+                hasActualIntersection = false,
+                linearRegressionR2 = null,
+                upwardCurrentPoints = emptyList(),
+                downwardCurrentPoints = emptyList()
+            )
+        }
+    }
+    
+    fun addInitialBlockSlot(): UnitState {
+        return copy(
+            customBlockCounts = customBlockCounts + "",
+            customBlockPercentages = customBlockPercentages + null,
+            currentReadings = currentReadings.map { it + "" }
+        )
+    }
 }
