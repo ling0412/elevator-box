@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.系数计算器"
-        tools:targetApi="36"
+        tools:targetApi="37"
         tools:ignore="UnusedAttribute">
 
         <activity

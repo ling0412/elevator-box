@@ -19,12 +19,12 @@ kotlin {
 
 android {
     namespace = "com.ling.box"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.ling.box"
         minSdk = 28
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 28
         versionName = "1.6.0"
 
