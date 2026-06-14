@@ -327,11 +327,14 @@ fun ShowPage(
         )
     }
 
-    if (showUpdateDialog && updateInfo != null) {
-        SettingsUpdateDialog(
-            updateInfo = updateInfo!!,
-            onDismiss = { updateViewModel.dismissDialog() }
-        )
+    if (showUpdateDialog) {
+        val info = updateInfo
+        if (info != null) {
+            SettingsUpdateDialog(
+                updateInfo = info,
+                onDismiss = { updateViewModel.dismissDialog() }
+            )
+        }
     }
     
     if (showBalanceRangeDialog.value) {

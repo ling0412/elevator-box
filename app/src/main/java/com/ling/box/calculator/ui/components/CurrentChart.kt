@@ -28,6 +28,28 @@ import com.ling.box.calculator.model.BalanceCoefficientAlgorithm
 import kotlin.math.abs
 import kotlin.math.max
 
+private data class ChartColors(
+    val axis: Color,
+    val grid: Color,
+    val primary: Color,
+    val secondary: Color,
+    val surface: Color,
+    val text: Color,
+    val textHighlight: Color
+)
+
+private fun createChartColors(colorScheme: androidx.compose.material3.ColorScheme): ChartColors {
+    return ChartColors(
+        axis = colorScheme.onSurface.copy(alpha = 0.5f),
+        grid = colorScheme.onSurface.copy(alpha = 0.1f),
+        primary = colorScheme.primary,
+        secondary = colorScheme.secondary,
+        surface = colorScheme.surfaceVariant.copy(alpha = 0.1f),
+        text = colorScheme.onSurface,
+        textHighlight = colorScheme.primary
+    )
+}
+
 @Composable
 fun CurrentChart(
     upwardCurrentPoints: List<Pair<Double, Float>>,
@@ -39,22 +61,12 @@ fun CurrentChart(
     modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val colors = remember(colorScheme) {
-        mapOf(
-            "axis" to colorScheme.onSurface.copy(alpha = 0.5f),
-            "grid" to colorScheme.onSurface.copy(alpha = 0.1f),
-            "primary" to colorScheme.primary,
-            "secondary" to colorScheme.secondary,
-            "surface" to colorScheme.surfaceVariant.copy(alpha = 0.1f),
-            "text" to colorScheme.onSurface,
-            "textHighlight" to colorScheme.primary
-        )
-    }
+    val colors = remember(colorScheme) { createChartColors(colorScheme) }
     val density = LocalDensity.current
 
     val textPaint = remember(density, colors) {
         android.graphics.Paint().apply {
-            color = colors["text"]!!.toArgb()
+            color = colors.text.toArgb()
             textSize = with(density) { 12.sp.toPx() }
             textAlign = android.graphics.Paint.Align.CENTER
             isAntiAlias = true
@@ -62,7 +74,7 @@ fun CurrentChart(
     }
     val r2TextPaint = remember(density, colors) {
         android.graphics.Paint().apply {
-            color = colors["text"]!!.toArgb()
+            color = colors.text.toArgb()
             textSize = with(density) { 11.sp.toPx() }
             textAlign = android.graphics.Paint.Align.LEFT
             isAntiAlias = true
@@ -71,7 +83,7 @@ fun CurrentChart(
     }
     val yAxisTextPaint = remember(density, colors) {
         android.graphics.Paint().apply {
-            color = colors["text"]!!.toArgb()
+            color = colors.text.toArgb()
             textSize = with(density) { 11.sp.toPx() }
             textAlign = android.graphics.Paint.Align.RIGHT
             isAntiAlias = true
@@ -79,7 +91,7 @@ fun CurrentChart(
     }
     val axisPaint = remember(density, colors) {
         Paint().apply {
-            color = colors["axis"]!!
+            color = colors.axis
             strokeWidth = with(density) { 1.5.dp.toPx() }
             isAntiAlias = true
             style = PaintingStyle.Stroke
@@ -87,7 +99,7 @@ fun CurrentChart(
     }
     val gridPaint = remember(density, colors) {
         Paint().apply {
-            color = colors["grid"]!!
+            color = colors.grid
             strokeWidth = with(density) { 0.8.dp.toPx() }
             isAntiAlias = true
             style = PaintingStyle.Stroke
@@ -95,7 +107,7 @@ fun CurrentChart(
     }
     val curvePaintPrimary = remember(density, colors) {
         Paint().apply {
-            color = colors["primary"]!!
+            color = colors.primary
             strokeWidth = with(density) { 3.dp.toPx() }
             isAntiAlias = true
             style = PaintingStyle.Stroke
@@ -105,7 +117,7 @@ fun CurrentChart(
     }
     val curvePaintSecondary = remember(density, colors) {
         Paint().apply {
-            color = colors["secondary"]!!
+            color = colors.secondary
             strokeWidth = with(density) { 3.dp.toPx() }
             isAntiAlias = true
             style = PaintingStyle.Stroke
@@ -113,14 +125,14 @@ fun CurrentChart(
             strokeJoin = StrokeJoin.Round
         }
     }
-    val pointPaintPrimary = remember(colors) { Paint().apply { color = colors["primary"]!!; isAntiAlias = true } }
-    val pointPaintSecondary = remember(colors) { Paint().apply { color = colors["secondary"]!!; isAntiAlias = true } }
+    val pointPaintPrimary = remember(colors) { Paint().apply { color = colors.primary; isAntiAlias = true } }
+    val pointPaintSecondary = remember(colors) { Paint().apply { color = colors.secondary; isAntiAlias = true } }
     val pointBorderPaint = remember(density) { Paint().apply { color = Color.White; strokeWidth = with(density) { 1.dp.toPx() }; isAntiAlias = true; style = PaintingStyle.Stroke } }
 
     Box(
         modifier = modifier
             .background(
-                color = colors["surface"]!!,
+                color = colors.surface,
                 shape = MaterialTheme.shapes.medium
             )
             .padding(8.dp)
@@ -272,7 +284,7 @@ fun CurrentChart(
 
                 val isKeyPoint = mandatoryPercentages.any { abs(xPercent - it) < 0.5f }
                 textPaint.isFakeBoldText = isKeyPoint
-                textPaint.color = if (isKeyPoint) colors["textHighlight"]!!.toArgb() else colors["text"]!!.toArgb()
+                textPaint.color = if (isKeyPoint) colors.textHighlight.toArgb() else colors.text.toArgb()
 
                 drawContext.canvas.nativeCanvas.drawText(
                     if (useCustomBlockInput) "%.1f%%".format(xPercent) else "${xPercent.toInt()}%",
@@ -283,7 +295,7 @@ fun CurrentChart(
             }
 
             textPaint.isFakeBoldText = false
-            textPaint.color = colors["text"]!!.toArgb()
+            textPaint.color = colors.text.toArgb()
 
             drawLine(
                 color = axisPaint.color,
@@ -439,7 +451,7 @@ fun CurrentChart(
                 
                 // 绘制半透明背景
                 drawRect(
-                    color = colors["surface"]!!.copy(alpha = 0.8f),
+                    color = colors.surface.copy(alpha = 0.8f),
                     topLeft = Offset(r2X - textWidth - bgPadding, r2Y - textHeight - bgPadding),
                     size = Size(textWidth + bgPadding * 2, textHeight + bgPadding * 2)
                 )

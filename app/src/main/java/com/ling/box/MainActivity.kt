@@ -81,11 +81,14 @@ class MainActivity : ComponentActivity() {
 
                 MainAppScreen(initialTabIndex = defaultTabIndex, updateViewModel = updateViewModel)
 
-                if (showUpdateDialog && updateInfo != null) {
-                    UpdateDialog(
-                        updateInfo = updateInfo!!,
-                        onDismiss = { updateViewModel.dismissDialog() }
-                    )
+                if (showUpdateDialog) {
+                    val info = updateInfo
+                    if (info != null) {
+                        UpdateDialog(
+                            updateInfo = info,
+                            onDismiss = { updateViewModel.dismissDialog() }
+                        )
+                    }
                 }
             }
         }
