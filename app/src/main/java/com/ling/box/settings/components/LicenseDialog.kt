@@ -92,7 +92,6 @@ fun LicenseDialog(
                                 } else {
                                     Toast.makeText(context, context.getString(R.string.toast_no_link), Toast.LENGTH_SHORT).show()
                                 }
-                                true
                             }
                         )
 
