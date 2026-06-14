@@ -134,6 +134,9 @@ dependencies {
     implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.androidx.compose.foundation.layout)
 
+    // Kotlinx Immutable Collections
+    implementation(libs.kotlinx.collections.immutable)
+
     // 测试依赖
     testImplementation(libs.junit)
 

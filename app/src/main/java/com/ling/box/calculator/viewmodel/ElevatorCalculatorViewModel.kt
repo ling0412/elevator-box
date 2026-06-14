@@ -13,6 +13,9 @@ import com.ling.box.calculator.model.UnitState
 import com.ling.box.calculator.model.toUiState
 import com.ling.box.calculator.repository.ElevatorRepository
 import com.ling.box.calculator.service.ElevatorCalculationService
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -40,8 +43,8 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
     private val twoPointCalculator: BalanceCoefficientCalculator = TwoPointIntersectionCalculator()
     private val linearRegressionCalculator: BalanceCoefficientCalculator = LinearRegressionCalculator()
 
-    private val _unitStateList = MutableStateFlow<List<UnitState>>(emptyList())
-    val unitStateList: StateFlow<List<UnitState>> = _unitStateList.asStateFlow()
+    private val _unitStateList = MutableStateFlow<PersistentList<UnitState>>(persistentListOf())
+    val unitStateList: StateFlow<PersistentList<UnitState>> = _unitStateList.asStateFlow()
 
     private val _currentElevatorIndex = MutableStateFlow(repository.getCurrentElevatorIndex())
     val currentElevatorIndex: StateFlow<Int> = _currentElevatorIndex.asStateFlow()
@@ -64,11 +67,11 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
         val currentList = _unitStateList.value
         val newIndex = currentList.size
         val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-        _unitStateList.value = currentList + UnitState(
+        _unitStateList.value = currentList.add(UnitState(
             name = "电梯 ${newIndex + 1}",
             creationDate = currentDate,
             useCustomBlockInput = true
-        )
+        ))
         _currentElevatorIndex.value = newIndex
         repository.updateLastAccessTime(newIndex)
         repository.saveElevatorList(_unitStateList.value)
@@ -82,7 +85,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
         val elevator = _unitStateList.value.getOrNull(index)
         if (elevator != null) {
             val updated = elevator.withUpdatedName(newName)
-            _unitStateList.value = _unitStateList.value.toMutableList().also { it[index] = updated }
+            _unitStateList.value = _unitStateList.value.set(index, updated)
             repository.saveState(index, updated)
         }
     }
@@ -118,7 +121,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
     init {
         try {
             val loadedElevators = repository.loadInitialElevators()
-            _unitStateList.value = loadedElevators
+            _unitStateList.value = loadedElevators.toPersistentList()
 
             if (_unitStateList.value.isEmpty()) {
                 addElevator()
@@ -144,7 +147,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
             triggerFullRecalculation()
         } catch (e: Exception) {
             android.util.Log.e("ElevatorCalculatorViewModel", "初始化失败，创建默认电梯", e)
-            _unitStateList.value = emptyList()
+            _unitStateList.value = persistentListOf()
             addElevator()
         }
     }
@@ -171,7 +174,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
                 repository.removeLastAccessTime(index)
                 repository.clearElevatorData(index)
             }
-            _unitStateList.value = emptyList()
+            _unitStateList.value = persistentListOf()
             addElevator()
             repository.saveElevatorList(_unitStateList.value)
             return
@@ -179,13 +182,13 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
 
         val sortedIndices = indices.sortedDescending()
         val currentIndex = _currentElevatorIndex.value
-        var newList = _unitStateList.value.toMutableList()
+        var newList = _unitStateList.value
 
         sortedIndices.forEach { indexToRemove ->
             if (indexToRemove in newList.indices) {
                 repository.removeLastAccessTime(indexToRemove)
                 repository.clearElevatorData(indexToRemove)
-                newList.removeAt(indexToRemove)
+                newList = newList.removeAt(indexToRemove)
             }
         }
 
@@ -212,8 +215,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
                 val remainingElevator = newList[0]
                 val currentNumber = getElevatorNumberFromName(remainingElevator.name)
                 if (currentNumber != null && currentNumber != 1 && isDefaultElevatorName(remainingElevator.name)) {
-                    newList = newList.toMutableList()
-                    newList[0] = remainingElevator.copy(name = "电梯 1")
+                    newList = newList.set(0, remainingElevator.copy(name = "电梯 1"))
                     _unitStateList.value = newList
                 }
                 _currentElevatorIndex.value = 0
@@ -413,7 +415,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
         val currentList = _unitStateList.value
         if (index in currentList.indices) {
             val updatedState = transform(currentList[index])
-            _unitStateList.value = currentList.toMutableList().also { it[index] = updatedState }
+            _unitStateList.value = currentList.set(index, updatedState)
         }
     }
 
@@ -454,7 +456,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
         } else {
             updated.withUpdatedBalanceCoefficient(null)
         }
-        _unitStateList.value = currentList.toMutableList().also { it[index] = updated }
+        _unitStateList.value = currentList.set(index, updated)
     }
 
     private fun calculateRecommendedBlocksForCurrent() {
@@ -481,7 +483,7 @@ class ElevatorCalculatorViewModel(application: Application) : AndroidViewModel(a
             idealK = idealK
         )
         val updated = data.withUpdatedRecommendedBlocksMessage(message)
-        _unitStateList.value = currentList.toMutableList().also { it[index] = updated }
+        _unitStateList.value = currentList.set(index, updated)
     }
 
     private fun triggerFullRecalculation() {
