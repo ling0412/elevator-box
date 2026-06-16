@@ -11,7 +11,7 @@
 | **语言 & UI**  | Kotlin / Jetpack Compose / Material 3 |
 | **架构**       | MVVM (Model-View-ViewModel)           |
 | **平台兼容性** | 最低 SDK 28 (Android 9.0+)            |
-| **目标版本**   | 目标 SDK 36                           |
+| **目标版本**   | 目标 SDK 37                           |
 | **构建系统**   | Gradle 9.x                            |
 
 ## 许可证

@@ -16,7 +16,7 @@ kotlinxSerialization = "1.11.0"
 # OkHttp 版本
 okhttp = "5.4.0"
 aboutLibraries = "14.2.1"
-kotlinxCollectionsImmutable = "0.3.8"
+kotlinxCollectionsImmutable = "0.5.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

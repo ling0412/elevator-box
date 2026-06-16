@@ -25,8 +25,8 @@ android {
         applicationId = "com.ling.box"
         minSdk = 28
         targetSdk = 37
-        versionCode = 28
-        versionName = "1.6.0"
+        versionCode = 30
+        versionName = "1.6.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
